@@ -31,22 +31,22 @@ export function SiteHeader() {
       className={cn(
         "sticky top-0 z-40 w-full transition-all duration-300",
         scrolled
-          ? "border-b border-border/60 bg-background/85 backdrop-blur-md shadow-soft"
-          : "bg-background/0",
+          ? "border-b border-border bg-background/90 backdrop-blur-md"
+          : "border-b border-transparent bg-background/0",
       )}
     >
-      <div className="mx-auto flex h-16 max-w-7xl items-center justify-between px-4 sm:px-6 lg:px-8">
+      <div className="mx-auto flex h-16 max-w-6xl items-center justify-between px-6 lg:px-10">
         <Link to="/" className="shrink-0">
           <BrandMark />
         </Link>
 
-        <nav className="hidden items-center gap-1 lg:flex">
+        <nav className="hidden items-center gap-8 lg:flex">
           {NAV.map((item) => (
             <Link
               key={item.to}
               to={item.to}
-              className="rounded-full px-4 py-2 text-sm font-medium text-foreground/80 transition-colors hover:bg-secondary hover:text-primary"
-              activeProps={{ className: "bg-secondary text-primary" }}
+              className="text-[13px] font-normal text-muted-foreground transition-colors hover:text-foreground"
+              activeProps={{ className: "text-foreground" }}
               activeOptions={{ exact: item.to === "/" }}
             >
               {item.label}
@@ -54,15 +54,15 @@ export function SiteHeader() {
           ))}
         </nav>
 
-        <div className="flex items-center gap-2">
+        <div className="flex items-center gap-3">
           <Link to="/menu" className="hidden sm:block">
-            <Button className="bg-primary text-primary-foreground hover:bg-primary/90">
-              Order Now
+            <Button size="sm" className="rounded-none bg-foreground text-background hover:bg-foreground/85 font-normal text-[13px] px-5">
+              Order
             </Button>
           </Link>
           <CartDrawer />
           <Button
-            variant="outline"
+            variant="ghost"
             size="icon"
             className="lg:hidden"
             onClick={() => setOpen((v) => !v)}
@@ -74,23 +74,23 @@ export function SiteHeader() {
       </div>
 
       {open && (
-        <div className="border-t bg-background lg:hidden">
-          <nav className="mx-auto flex max-w-7xl flex-col gap-1 px-4 py-4">
+        <div className="border-t border-border bg-background lg:hidden">
+          <nav className="mx-auto flex max-w-6xl flex-col px-6 py-4">
             {NAV.map((item) => (
               <Link
                 key={item.to}
                 to={item.to}
                 onClick={() => setOpen(false)}
-                className="rounded-md px-4 py-3 text-base font-medium text-foreground/80 hover:bg-secondary hover:text-primary"
-                activeProps={{ className: "bg-secondary text-primary" }}
+                className="border-b border-border py-3 text-sm font-normal text-muted-foreground hover:text-foreground"
+                activeProps={{ className: "text-foreground" }}
                 activeOptions={{ exact: item.to === "/" }}
               >
                 {item.label}
               </Link>
             ))}
-            <Link to="/menu" onClick={() => setOpen(false)} className="mt-2">
-              <Button className="w-full bg-primary text-primary-foreground hover:bg-primary/90">
-                Order Now
+            <Link to="/menu" onClick={() => setOpen(false)} className="mt-4">
+              <Button className="w-full rounded-none bg-foreground text-background hover:bg-foreground/85 font-normal">
+                Order
               </Button>
             </Link>
           </nav>

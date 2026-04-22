@@ -1,6 +1,6 @@
 import { useState } from "react";
 import { Link } from "@tanstack/react-router";
-import { Loader2, Plus } from "lucide-react";
+import { Loader2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { useCartStore } from "@/stores/cart-store";
 import { formatPrice, type ShopifyProduct } from "@/lib/shopify";
@@ -25,15 +25,15 @@ export function ProductCard({ product }: { product: ShopifyProduct }) {
       quantity: 1,
       selectedOptions: selected.selectedOptions || [],
     });
-    toast.success("Added to your basket", { description: `${node.title} (${selected.title})` });
+    toast.success("Added to basket", { description: `${node.title} · ${selected.title}` });
   };
 
   return (
-    <article className="group flex flex-col overflow-hidden rounded-2xl border border-border bg-card shadow-soft transition-all duration-300 hover:-translate-y-1 hover:shadow-warm">
+    <article className="group flex flex-col">
       <Link
         to="/product/$handle"
         params={{ handle: node.handle }}
-        className="relative block aspect-square overflow-hidden bg-muted"
+        className="relative block aspect-[4/5] overflow-hidden bg-muted"
       >
         {image && (
           <img
@@ -41,38 +41,39 @@ export function ProductCard({ product }: { product: ShopifyProduct }) {
             alt={image.altText || node.title}
             loading="lazy"
             width={600}
-            height={600}
-            className="h-full w-full object-cover transition-transform duration-700 group-hover:scale-105"
+            height={750}
+            className="h-full w-full object-cover transition-transform duration-[1200ms] ease-out group-hover:scale-[1.04]"
           />
-        )}
-        {node.productType && (
-          <span className="absolute left-3 top-3 rounded-full bg-background/90 px-3 py-1 text-[10px] font-semibold uppercase tracking-wider text-primary backdrop-blur">
-            {node.productType}
-          </span>
         )}
       </Link>
 
-      <div className="flex flex-1 flex-col gap-3 p-5">
-        <div>
-          <Link to="/product/$handle" params={{ handle: node.handle }}>
-            <h3 className="font-display text-xl font-semibold text-primary transition-colors hover:text-accent">
+      <div className="flex flex-1 flex-col gap-3 pt-5">
+        <div className="flex items-baseline justify-between gap-3">
+          <Link to="/product/$handle" params={{ handle: node.handle }} className="min-w-0">
+            <h3 className="font-display text-lg leading-snug text-foreground">
               {node.title}
             </h3>
           </Link>
-          <p className="mt-1 line-clamp-2 text-sm text-muted-foreground">{node.description}</p>
+          <span className="shrink-0 text-sm tabular-nums text-foreground">
+            {selected ? formatPrice(selected.price.amount, selected.price.currencyCode) : "—"}
+          </span>
         </div>
 
+        {node.description && (
+          <p className="line-clamp-2 text-sm leading-relaxed text-muted-foreground">{node.description}</p>
+        )}
+
         {variants.length > 1 && (
-          <div className="flex flex-wrap gap-1.5">
+          <div className="flex flex-wrap gap-2 pt-1">
             {variants.map((v) => (
               <button
                 key={v.node.id}
                 onClick={() => setSelected(v.node)}
                 className={cn(
-                  "rounded-full border px-3 py-1 text-xs font-medium transition-colors",
+                  "border px-3 py-1 text-xs transition-colors",
                   selected?.id === v.node.id
-                    ? "border-primary bg-primary text-primary-foreground"
-                    : "border-border bg-background hover:border-primary/50",
+                    ? "border-foreground text-foreground"
+                    : "border-border text-muted-foreground hover:border-foreground hover:text-foreground",
                 )}
               >
                 {v.node.title}
@@ -81,17 +82,22 @@ export function ProductCard({ product }: { product: ShopifyProduct }) {
           </div>
         )}
 
-        <div className="mt-auto flex items-center justify-between gap-3 pt-2">
-          <span className="font-display text-2xl font-bold text-primary">
-            {selected ? formatPrice(selected.price.amount, selected.price.currencyCode) : "—"}
-          </span>
+        <div className="pt-3">
           <Button
             onClick={handleAdd}
             disabled={!selected || isLoading}
+            variant="ghost"
             size="sm"
-            className="bg-primary text-primary-foreground hover:bg-primary/90"
+            className="h-auto p-0 text-[13px] font-normal text-foreground hover:bg-transparent hover:text-accent group/btn"
           >
-            {isLoading ? <Loader2 className="h-4 w-4 animate-spin" /> : <><Plus className="mr-1 h-4 w-4" />Add</>}
+            {isLoading ? (
+              <Loader2 className="h-3.5 w-3.5 animate-spin" />
+            ) : (
+              <>
+                Add to basket
+                <span className="ml-2 inline-block transition-transform group-hover/btn:translate-x-1">→</span>
+              </>
+            )}
           </Button>
         </div>
       </div>
