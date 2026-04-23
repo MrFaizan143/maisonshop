@@ -9,8 +9,8 @@ const searchSchema = z.object({
 });
 
 export const Route = createFileRoute("/search")({
-  validateSearch: searchSchema,
-  head: ({ search }) => ({
+  validateSearch: (s: Record<string, unknown>) => searchSchema.parse(s),
+  head: ({ match }: { match: { search: { q?: string } } }) => ({
     meta: [
       { title: search.q ? `Search: ${search.q} — ShopHub` : "Search — ShopHub" },
       { name: "description", content: `Search results for ${search.q ?? "products"}.` },
