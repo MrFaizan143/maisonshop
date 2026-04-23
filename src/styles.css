@@ -5,7 +5,7 @@
 @custom-variant dark (&:is(.dark *));
 
 @theme inline {
-  --font-display: "Fraunces", "Playfair Display", Georgia, serif;
+  --font-display: "Poppins", system-ui, sans-serif;
   --font-sans: "Inter", system-ui, sans-serif;
 
   --radius-sm: calc(var(--radius) - 2px);
@@ -32,73 +32,74 @@
   --color-border: var(--border);
   --color-input: var(--input);
   --color-ring: var(--ring);
-  --color-gold: var(--gold);
-  --color-cream: var(--cream);
-  --color-wood: var(--wood);
+  --color-brand: var(--brand);
+  --color-brand-foreground: var(--brand-foreground);
+  --color-deal: var(--deal);
+  --color-success: var(--success);
 }
 
 :root {
-  --radius: 0.25rem;
+  --radius: 0.5rem;
 
-  /* Minimalist modern palette — paper, ink, terracotta */
-  --background: oklch(0.985 0.003 80);       /* near-white paper */
-  --foreground: oklch(0.18 0.01 60);         /* deep ink */
+  /* E-commerce palette: navy brand, saffron accent, fresh grey surface */
+  --background: oklch(0.985 0.003 240);
+  --foreground: oklch(0.18 0.02 250);
 
-  --card: oklch(0.985 0.003 80);
-  --card-foreground: oklch(0.18 0.01 60);
+  --card: oklch(1 0 0);
+  --card-foreground: oklch(0.18 0.02 250);
 
-  --popover: oklch(0.99 0.002 80);
-  --popover-foreground: oklch(0.18 0.01 60);
+  --popover: oklch(1 0 0);
+  --popover-foreground: oklch(0.18 0.02 250);
 
-  --primary: oklch(0.18 0.01 60);            /* ink as primary */
-  --primary-foreground: oklch(0.985 0.003 80);
+  --primary: oklch(0.32 0.12 265);          /* deep indigo */
+  --primary-foreground: oklch(0.99 0.003 240);
 
-  --secondary: oklch(0.95 0.005 75);
-  --secondary-foreground: oklch(0.22 0.012 60);
+  --secondary: oklch(0.96 0.005 250);
+  --secondary-foreground: oklch(0.22 0.02 250);
 
-  --muted: oklch(0.95 0.005 75);
-  --muted-foreground: oklch(0.5 0.012 60);
+  --muted: oklch(0.96 0.005 250);
+  --muted-foreground: oklch(0.5 0.015 250);
 
-  --accent: oklch(0.6 0.13 38);              /* warm terracotta */
-  --accent-foreground: oklch(0.985 0.003 80);
+  --accent: oklch(0.78 0.16 70);            /* saffron / amber */
+  --accent-foreground: oklch(0.18 0.02 250);
 
-  --destructive: oklch(0.55 0.2 25);
-  --destructive-foreground: oklch(0.985 0.003 80);
+  --destructive: oklch(0.58 0.22 25);
+  --destructive-foreground: oklch(0.99 0.003 240);
 
-  --border: oklch(0.9 0.005 75);
-  --input: oklch(0.9 0.005 75);
-  --ring: oklch(0.6 0.13 38);
+  --border: oklch(0.92 0.006 250);
+  --input: oklch(0.92 0.006 250);
+  --ring: oklch(0.32 0.12 265);
 
-  --gold: oklch(0.6 0.13 38);
-  --cream: oklch(0.985 0.003 80);
-  --wood: oklch(0.18 0.01 60);
+  /* brand-specific extras */
+  --brand: oklch(0.32 0.12 265);
+  --brand-foreground: oklch(0.99 0.003 240);
+  --deal: oklch(0.6 0.22 25);               /* deal red */
+  --success: oklch(0.62 0.16 145);          /* in stock green */
 
-  --gradient-warm: linear-gradient(180deg, oklch(0.985 0.003 80), oklch(0.96 0.008 70));
-  --gradient-hero: linear-gradient(180deg, oklch(0.18 0.01 60 / 0), oklch(0.18 0.01 60 / 0.55));
-  --shadow-warm: 0 1px 0 oklch(0.18 0.01 60 / 0.06);
-  --shadow-soft: 0 1px 0 oklch(0.18 0.01 60 / 0.04);
+  --gradient-hero: linear-gradient(135deg, oklch(0.32 0.12 265) 0%, oklch(0.45 0.18 295) 100%);
+  --gradient-deal: linear-gradient(90deg, oklch(0.78 0.16 70), oklch(0.7 0.2 50));
+  --shadow-card: 0 1px 3px oklch(0.18 0.02 250 / 0.08), 0 1px 2px oklch(0.18 0.02 250 / 0.04);
+  --shadow-pop: 0 10px 30px -10px oklch(0.18 0.02 250 / 0.18);
 }
 
 .dark {
-  --background: oklch(0.14 0.008 60);
-  --foreground: oklch(0.96 0.005 80);
-  --card: oklch(0.16 0.008 60);
-  --card-foreground: oklch(0.96 0.005 80);
-  --popover: oklch(0.16 0.008 60);
-  --popover-foreground: oklch(0.96 0.005 80);
-  --primary: oklch(0.96 0.005 80);
-  --primary-foreground: oklch(0.14 0.008 60);
-  --secondary: oklch(0.2 0.01 60);
-  --secondary-foreground: oklch(0.96 0.005 80);
-  --muted: oklch(0.2 0.01 60);
-  --muted-foreground: oklch(0.7 0.01 70);
-  --accent: oklch(0.65 0.13 38);
-  --accent-foreground: oklch(0.14 0.008 60);
-  --destructive: oklch(0.65 0.2 25);
-  --destructive-foreground: oklch(0.96 0.005 80);
-  --border: oklch(0.25 0.01 60);
-  --input: oklch(0.25 0.01 60);
-  --ring: oklch(0.65 0.13 38);
+  --background: oklch(0.14 0.015 250);
+  --foreground: oklch(0.96 0.005 240);
+  --card: oklch(0.18 0.018 250);
+  --card-foreground: oklch(0.96 0.005 240);
+  --popover: oklch(0.18 0.018 250);
+  --popover-foreground: oklch(0.96 0.005 240);
+  --primary: oklch(0.78 0.16 70);
+  --primary-foreground: oklch(0.14 0.015 250);
+  --secondary: oklch(0.22 0.018 250);
+  --secondary-foreground: oklch(0.96 0.005 240);
+  --muted: oklch(0.22 0.018 250);
+  --muted-foreground: oklch(0.7 0.01 250);
+  --accent: oklch(0.78 0.16 70);
+  --accent-foreground: oklch(0.14 0.015 250);
+  --border: oklch(0.26 0.018 250);
+  --input: oklch(0.26 0.018 250);
+  --ring: oklch(0.78 0.16 70);
 }
 
 @layer base {
@@ -114,29 +115,24 @@
     background-color: var(--color-background);
     color: var(--color-foreground);
     font-family: var(--font-sans);
-    font-feature-settings: "ss01", "cv11";
     -webkit-font-smoothing: antialiased;
     text-rendering: optimizeLegibility;
   }
 
   h1, h2, h3, h4, h5 {
     font-family: var(--font-display);
-    letter-spacing: -0.02em;
-    font-weight: 400;
+    font-weight: 600;
+    letter-spacing: -0.01em;
   }
 }
 
 @layer utilities {
   .text-balance { text-wrap: balance; }
-  .bg-gradient-warm { background: var(--gradient-warm); }
-  .shadow-warm { box-shadow: var(--shadow-warm); }
-  .shadow-soft { box-shadow: var(--shadow-soft); }
-  .eyebrow {
-    font-size: 0.6875rem;
-    font-weight: 500;
-    letter-spacing: 0.24em;
-    text-transform: uppercase;
-    color: var(--color-muted-foreground);
-  }
-  .hairline { border-color: var(--color-border); }
+  .bg-gradient-hero { background: var(--gradient-hero); }
+  .bg-gradient-deal { background: var(--gradient-deal); }
+  .shadow-card { box-shadow: var(--shadow-card); }
+  .shadow-pop { box-shadow: var(--shadow-pop); }
+  .text-deal { color: var(--color-deal); }
+  .text-success { color: var(--color-success); }
+  .bg-deal { background-color: var(--color-deal); }
 }
