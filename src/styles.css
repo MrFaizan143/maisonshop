@@ -5,8 +5,10 @@
 @custom-variant dark (&:is(.dark *));
 
 @theme inline {
-  --font-display: "Poppins", system-ui, sans-serif;
-  --font-sans: "Inter", system-ui, sans-serif;
+  --font-display: "Fraunces", "Times New Roman", serif;
+  --font-editorial: "Instrument Serif", "Times New Roman", serif;
+  --font-sans: "Geist", system-ui, sans-serif;
+  --font-mono: "Geist Mono", ui-monospace, monospace;
 
   --radius-sm: calc(var(--radius) - 2px);
   --radius-md: var(--radius);
@@ -39,47 +41,137 @@
 }
 
 :root {
-  --radius: 0.5rem;
+  /* Default = monochrome neutral anchor (header/footer/home) */
+  --radius: 0.375rem;
 
-  /* E-commerce palette: navy brand, saffron accent, fresh grey surface */
-  --background: oklch(0.985 0.003 240);
-  --foreground: oklch(0.18 0.02 250);
+  --background: oklch(0.99 0 0);
+  --foreground: oklch(0.12 0 0);
 
   --card: oklch(1 0 0);
-  --card-foreground: oklch(0.18 0.02 250);
+  --card-foreground: oklch(0.12 0 0);
 
   --popover: oklch(1 0 0);
-  --popover-foreground: oklch(0.18 0.02 250);
+  --popover-foreground: oklch(0.12 0 0);
 
-  --primary: oklch(0.32 0.12 265);          /* deep indigo */
-  --primary-foreground: oklch(0.99 0.003 240);
+  --primary: oklch(0.12 0 0);               /* near-black */
+  --primary-foreground: oklch(0.99 0 0);
 
-  --secondary: oklch(0.96 0.005 250);
-  --secondary-foreground: oklch(0.22 0.02 250);
+  --secondary: oklch(0.97 0 0);
+  --secondary-foreground: oklch(0.18 0 0);
 
-  --muted: oklch(0.96 0.005 250);
-  --muted-foreground: oklch(0.5 0.015 250);
+  --muted: oklch(0.96 0 0);
+  --muted-foreground: oklch(0.5 0 0);
 
-  --accent: oklch(0.78 0.16 70);            /* saffron / amber */
-  --accent-foreground: oklch(0.18 0.02 250);
+  --accent: oklch(0.12 0 0);                /* monochrome accent by default */
+  --accent-foreground: oklch(0.99 0 0);
 
   --destructive: oklch(0.58 0.22 25);
-  --destructive-foreground: oklch(0.99 0.003 240);
+  --destructive-foreground: oklch(0.99 0 0);
 
-  --border: oklch(0.92 0.006 250);
-  --input: oklch(0.92 0.006 250);
-  --ring: oklch(0.32 0.12 265);
+  --border: oklch(0.92 0 0);
+  --input: oklch(0.92 0 0);
+  --ring: oklch(0.12 0 0);
 
-  /* brand-specific extras */
-  --brand: oklch(0.32 0.12 265);
-  --brand-foreground: oklch(0.99 0.003 240);
-  --deal: oklch(0.6 0.22 25);               /* deal red */
-  --success: oklch(0.62 0.16 145);          /* in stock green */
+  --brand: oklch(0.12 0 0);
+  --brand-foreground: oklch(0.99 0 0);
+  --deal: oklch(0.55 0.22 27);
+  --success: oklch(0.55 0.14 150);
 
-  --gradient-hero: linear-gradient(135deg, oklch(0.32 0.12 265) 0%, oklch(0.45 0.18 295) 100%);
-  --gradient-deal: linear-gradient(90deg, oklch(0.78 0.16 70), oklch(0.7 0.2 50));
-  --shadow-card: 0 1px 3px oklch(0.18 0.02 250 / 0.08), 0 1px 2px oklch(0.18 0.02 250 / 0.04);
-  --shadow-pop: 0 10px 30px -10px oklch(0.18 0.02 250 / 0.18);
+  --gradient-hero: linear-gradient(135deg, oklch(0.12 0 0) 0%, oklch(0.22 0 0) 100%);
+  --gradient-deal: linear-gradient(90deg, oklch(0.55 0.22 27), oklch(0.6 0.2 40));
+  --shadow-card: 0 1px 2px oklch(0 0 0 / 0.04);
+  --shadow-pop: 0 20px 40px -20px oklch(0 0 0 / 0.18);
+}
+
+/* ============ CATEGORY THEMES ============ */
+
+/* FASHION — editorial monochrome with cool stone accent */
+[data-theme="fashion"] {
+  --radius: 0;
+  --background: oklch(0.97 0 0);
+  --foreground: oklch(0.08 0 0);
+  --card: oklch(1 0 0);
+  --card-foreground: oklch(0.08 0 0);
+  --primary: oklch(0.08 0 0);
+  --primary-foreground: oklch(0.99 0 0);
+  --accent: oklch(0.55 0.08 25);            /* muted terracotta */
+  --accent-foreground: oklch(0.99 0 0);
+  --muted: oklch(0.94 0 0);
+  --muted-foreground: oklch(0.42 0 0);
+  --border: oklch(0.88 0 0);
+  --ring: oklch(0.08 0 0);
+  --shadow-pop: 0 30px 60px -30px oklch(0 0 0 / 0.35);
+  --font-display: "Instrument Serif", "Times New Roman", serif;
+  --font-sans: "Geist", system-ui, sans-serif;
+}
+
+/* FOOD / GROCERY — organic, lush, earth tones */
+[data-theme="grocery"] {
+  --radius: 1.25rem;
+  --background: oklch(0.97 0.015 90);       /* cream */
+  --foreground: oklch(0.22 0.04 60);
+  --card: oklch(0.985 0.012 90);
+  --card-foreground: oklch(0.22 0.04 60);
+  --primary: oklch(0.42 0.08 145);          /* sage / forest */
+  --primary-foreground: oklch(0.97 0.015 90);
+  --accent: oklch(0.62 0.16 45);            /* terracotta */
+  --accent-foreground: oklch(0.99 0 0);
+  --secondary: oklch(0.93 0.025 90);
+  --muted: oklch(0.93 0.025 90);
+  --muted-foreground: oklch(0.42 0.03 60);
+  --border: oklch(0.86 0.025 80);
+  --ring: oklch(0.42 0.08 145);
+  --shadow-pop: 0 20px 50px -20px oklch(0.42 0.08 145 / 0.35);
+  --font-display: "Fraunces", Georgia, serif;
+  --font-sans: "Geist", system-ui, sans-serif;
+}
+
+/* ELECTRONICS — sharp, techy minimal */
+[data-theme="electronics"] {
+  --radius: 0.25rem;
+  --background: oklch(0.98 0.003 250);
+  --foreground: oklch(0.12 0.01 250);
+  --primary: oklch(0.18 0.02 250);
+  --accent: oklch(0.65 0.2 250);            /* electric blue */
+  --accent-foreground: oklch(0.99 0 0);
+  --border: oklch(0.9 0.005 250);
+  --ring: oklch(0.65 0.2 250);
+  --font-display: "Geist", system-ui, sans-serif;
+  --font-sans: "Geist", system-ui, sans-serif;
+}
+
+/* HOME — warm, soft, lived-in */
+[data-theme="home"] {
+  --radius: 0.875rem;
+  --background: oklch(0.965 0.012 60);
+  --foreground: oklch(0.22 0.025 50);
+  --card: oklch(0.99 0.008 60);
+  --primary: oklch(0.32 0.04 40);
+  --primary-foreground: oklch(0.97 0.012 60);
+  --accent: oklch(0.7 0.1 55);              /* warm clay */
+  --accent-foreground: oklch(0.15 0.02 40);
+  --muted: oklch(0.93 0.018 60);
+  --muted-foreground: oklch(0.45 0.025 50);
+  --border: oklch(0.87 0.018 60);
+  --ring: oklch(0.7 0.1 55);
+  --font-display: "Fraunces", Georgia, serif;
+}
+
+/* BEAUTY — soft editorial blush */
+[data-theme="beauty"] {
+  --radius: 1.5rem;
+  --background: oklch(0.97 0.015 15);
+  --foreground: oklch(0.18 0.02 350);
+  --card: oklch(0.99 0.008 15);
+  --primary: oklch(0.25 0.04 350);
+  --primary-foreground: oklch(0.99 0.005 15);
+  --accent: oklch(0.78 0.09 15);            /* powder blush */
+  --accent-foreground: oklch(0.18 0.02 350);
+  --muted: oklch(0.94 0.02 15);
+  --muted-foreground: oklch(0.45 0.025 350);
+  --border: oklch(0.88 0.02 15);
+  --ring: oklch(0.78 0.09 15);
+  --font-display: "Instrument Serif", "Times New Roman", serif;
 }
 
 .dark {
@@ -117,12 +209,18 @@
     font-family: var(--font-sans);
     -webkit-font-smoothing: antialiased;
     text-rendering: optimizeLegibility;
+    transition: background-color 0.6s ease, color 0.6s ease;
   }
 
   h1, h2, h3, h4, h5 {
     font-family: var(--font-display);
-    font-weight: 600;
-    letter-spacing: -0.01em;
+    font-weight: 500;
+    letter-spacing: -0.02em;
+  }
+
+  /* Themed scope transitions */
+  [data-theme] {
+    transition: background-color 0.6s ease, color 0.6s ease;
   }
 }
 
@@ -135,4 +233,42 @@
   .text-deal { color: var(--color-deal); }
   .text-success { color: var(--color-success); }
   .bg-deal { background-color: var(--color-deal); }
+  .font-editorial { font-family: var(--font-editorial); }
+  .font-display { font-family: var(--font-display); }
+
+  /* Editorial display headline — for fashion */
+  .editorial-headline {
+    font-family: var(--font-editorial);
+    font-weight: 400;
+    letter-spacing: -0.04em;
+    line-height: 0.92;
+  }
+
+  /* Organic display — for food */
+  .organic-headline {
+    font-family: var(--font-display);
+    font-weight: 400;
+    font-style: italic;
+    letter-spacing: -0.02em;
+  }
+
+  /* Force monochrome anchor (header/footer) */
+  .anchor-mono {
+    --background: oklch(0.08 0 0);
+    --foreground: oklch(0.99 0 0);
+    --primary: oklch(0.08 0 0);
+    --primary-foreground: oklch(0.99 0 0);
+    --border: oklch(0.18 0 0);
+    --muted: oklch(0.18 0 0);
+    --muted-foreground: oklch(0.7 0 0);
+    --card: oklch(0.08 0 0);
+    --card-foreground: oklch(0.99 0 0);
+    --accent: oklch(0.99 0 0);
+    --accent-foreground: oklch(0.08 0 0);
+  }
+
+  .grain {
+    background-image: radial-gradient(oklch(0 0 0 / 0.04) 1px, transparent 1px);
+    background-size: 3px 3px;
+  }
 }
