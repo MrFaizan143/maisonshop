@@ -69,7 +69,7 @@ function CheckoutPage() {
     }
     clearCart();
     toast.success(`Order ${order.order_number} placed!`);
-    navigate({ to: "/account/orders" });
+    navigate({ to: "/order/$id", params: { id: order.id } });
   };
 
   if (authLoading || !user || items.length === 0) {
