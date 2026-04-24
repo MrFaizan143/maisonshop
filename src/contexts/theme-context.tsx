@@ -21,7 +21,10 @@ export function ThemeProvider({ children }: { children: ReactNode }) {
 
   return (
     <ThemeCtx.Provider value={value}>
-      <div data-theme={theme === "default" ? undefined : theme} className="min-h-screen bg-background text-foreground">
+      <div
+        data-theme={theme === "default" ? undefined : theme}
+        className="min-h-screen bg-background text-foreground"
+      >
         {children}
       </div>
     </ThemeCtx.Provider>

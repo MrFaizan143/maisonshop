@@ -1,5 +1,6 @@
 import { createFileRoute } from "@tanstack/react-router";
 import { useEffect, useState } from "react";
+import { motion } from "framer-motion";
 import { z } from "zod";
 import { supabase } from "@/integrations/supabase/client";
 import { ProductCard, type ProductCardData } from "@/components/product-card";
@@ -12,7 +13,7 @@ export const Route = createFileRoute("/search")({
   validateSearch: (s: Record<string, unknown>) => searchSchema.parse(s),
   head: ({ match }) => ({
     meta: [
-      { title: match.search.q ? `Search: ${match.search.q} — ShopHub` : "Search — ShopHub" },
+      { title: match.search.q ? `Search: ${match.search.q} — Maison` : "Search — Maison" },
       { name: "description", content: `Search results for ${match.search.q ?? "products"}.` },
     ],
   }),
@@ -32,7 +33,7 @@ function SearchPage() {
     setLoading(true);
     supabase
       .from("products")
-      .select("id, title, slug, price, compare_at_price, image_url, rating, rating_count")
+      .select("id, title, slug, price, compare_at_price, image_url, rating, rating_count, stock")
       .eq("active", true)
       .or(`title.ilike.%${q}%,description.ilike.%${q}%,brand.ilike.%${q}%`)
       .limit(60)
@@ -43,23 +44,63 @@ function SearchPage() {
   }, [q]);
 
   return (
-    <div className="mx-auto max-w-7xl px-3 py-4 sm:px-6 sm:py-6">
-      <h1 className="mb-1 text-2xl font-semibold">
-        {q ? `Results for "${q}"` : "Search"}
-      </h1>
-      <p className="mb-4 text-sm text-muted-foreground">
-        {loading ? "Searching..." : `${results.length} product${results.length === 1 ? "" : "s"} found`}
-      </p>
-
-      {!loading && results.length === 0 && q && (
-        <div className="rounded-xl border border-dashed border-border bg-card p-12 text-center">
-          <p className="text-muted-foreground">No products match your search.</p>
+    <div className="bg-background text-foreground">
+      {/* Header */}
+      <section className="border-b border-border">
+        <div className="mx-auto max-w-[1400px] px-5 sm:px-8 py-16 sm:py-20">
+          <p className="font-mono text-[11px] uppercase tracking-[0.25em] text-muted-foreground">
+            — Search
+          </p>
+          <motion.h1
+            initial={{ y: 20, opacity: 0 }}
+            animate={{ y: 0, opacity: 1 }}
+            transition={{ duration: 0.7, ease: [0.22, 1, 0.36, 1] }}
+            className="mt-4 editorial-headline text-[clamp(2.5rem,8vw,6rem)]"
+          >
+            {q ? (
+              <>
+                <span className="text-muted-foreground/40">"</span>
+                {q}
+                <span className="text-muted-foreground/40">"</span>
+              </>
+            ) : (
+              "What are you looking for?"
+            )}
+          </motion.h1>
+          <p className="mt-4 font-mono text-[11px] uppercase tracking-[0.22em] text-muted-foreground">
+            {loading
+              ? "Searching the collection…"
+              : q
+                ? `${results.length} result${results.length === 1 ? "" : "s"} found`
+                : "Enter a term above to begin"}
+          </p>
         </div>
-      )}
+      </section>
 
-      <div className="grid grid-cols-2 gap-3 sm:grid-cols-3 md:grid-cols-4">
-        {results.map((p) => <ProductCard key={p.id} product={p} />)}
-      </div>
+      {/* Results */}
+      <section className="mx-auto max-w-[1400px] px-5 sm:px-8 py-12 sm:py-16">
+        {!loading && results.length === 0 && q ? (
+          <div className="py-24 text-center">
+            <p className="font-display text-3xl text-muted-foreground/50">Nothing found.</p>
+            <p className="mt-3 font-mono text-[11px] uppercase tracking-[0.22em] text-muted-foreground">
+              Try a different term or browse our categories.
+            </p>
+          </div>
+        ) : (
+          <div className="grid grid-cols-2 gap-4 sm:grid-cols-3 md:grid-cols-4 md:gap-6">
+            {results.map((p, i) => (
+              <motion.div
+                key={p.id}
+                initial={{ opacity: 0, y: 16 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ duration: 0.45, delay: (i % 8) * 0.04 }}
+              >
+                <ProductCard product={p} />
+              </motion.div>
+            ))}
+          </div>
+        )}
+      </section>
     </div>
   );
 }

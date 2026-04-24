@@ -17,7 +17,13 @@ function EditProductPage() {
     if (loading) return;
     if (!user) navigate({ to: "/login" });
   }, [user, loading, navigate]);
-  if (loading) return <div className="py-20 text-center"><Loader2 className="mx-auto h-6 w-6 animate-spin" /></div>;
-  if (!isAdmin) return <div className="py-20 text-center text-sm text-muted-foreground">Admins only.</div>;
+  if (loading)
+    return (
+      <div className="py-20 text-center">
+        <Loader2 className="mx-auto h-6 w-6 animate-spin" />
+      </div>
+    );
+  if (!isAdmin)
+    return <div className="py-20 text-center text-sm text-muted-foreground">Admins only.</div>;
   return <AdminProductForm productId={id} />;
 }

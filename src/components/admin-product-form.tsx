@@ -9,7 +9,10 @@ import { Switch } from "@/components/ui/switch";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
 
-interface Category { id: string; name: string }
+interface Category {
+  id: string;
+  name: string;
+}
 
 interface ProductFormState {
   title: string;
@@ -26,12 +29,26 @@ interface ProductFormState {
 }
 
 const empty: ProductFormState = {
-  title: "", slug: "", description: "", price: "", compare_at_price: "",
-  stock: "0", category_id: "", brand: "", image_url: "", active: true, featured: false,
+  title: "",
+  slug: "",
+  description: "",
+  price: "",
+  compare_at_price: "",
+  stock: "0",
+  category_id: "",
+  brand: "",
+  image_url: "",
+  active: true,
+  featured: false,
 };
 
 const slugify = (s: string) =>
-  s.toLowerCase().trim().replace(/[^a-z0-9]+/g, "-").replace(/^-+|-+$/g, "").slice(0, 80);
+  s
+    .toLowerCase()
+    .trim()
+    .replace(/[^a-z0-9]+/g, "-")
+    .replace(/^-+|-+$/g, "")
+    .slice(0, 80);
 
 export function AdminProductForm({ productId }: { productId?: string }) {
   const navigate = useNavigate();
@@ -44,7 +61,9 @@ export function AdminProductForm({ productId }: { productId?: string }) {
   useEffect(() => {
     Promise.all([
       supabase.from("categories").select("id, name").order("sort_order"),
-      productId ? supabase.from("products").select("*").eq("id", productId).maybeSingle() : Promise.resolve({ data: null }),
+      productId
+        ? supabase.from("products").select("*").eq("id", productId).maybeSingle()
+        : Promise.resolve({ data: null }),
     ]).then(([cats, prod]) => {
       setCategories((cats.data ?? []) as Category[]);
       if (prod.data) {
@@ -72,7 +91,8 @@ export function AdminProductForm({ productId }: { productId?: string }) {
     const ext = file.name.split(".").pop() ?? "jpg";
     const path = `${crypto.randomUUID()}.${ext}`;
     const { error } = await supabase.storage.from("product-images").upload(path, file, {
-      cacheControl: "31536000", upsert: false,
+      cacheControl: "31536000",
+      upsert: false,
     });
     if (error) {
       toast.error("Upload failed", { description: error.message });
@@ -106,12 +126,20 @@ export function AdminProductForm({ productId }: { productId?: string }) {
       ? await supabase.from("products").update(payload).eq("id", productId)
       : await supabase.from("products").insert(payload);
     setSaving(false);
-    if (error) { toast.error("Save failed", { description: error.message }); return; }
+    if (error) {
+      toast.error("Save failed", { description: error.message });
+      return;
+    }
     toast.success(productId ? "Product updated" : "Product created");
     navigate({ to: "/admin/products" });
   };
 
-  if (loading) return <div className="py-20 text-center"><Loader2 className="mx-auto h-6 w-6 animate-spin" /></div>;
+  if (loading)
+    return (
+      <div className="py-20 text-center">
+        <Loader2 className="mx-auto h-6 w-6 animate-spin" />
+      </div>
+    );
 
   return (
     <form onSubmit={handleSubmit} className="mx-auto max-w-3xl px-4 py-6 space-y-5">
@@ -120,44 +148,93 @@ export function AdminProductForm({ productId }: { productId?: string }) {
       <div className="rounded-xl border border-border bg-card p-5 shadow-card space-y-4">
         <div>
           <Label>Title</Label>
-          <Input required maxLength={200} value={form.title}
-            onChange={(e) => setForm({ ...form, title: e.target.value, slug: form.slug || slugify(e.target.value) })} />
+          <Input
+            required
+            maxLength={200}
+            value={form.title}
+            onChange={(e) =>
+              setForm({
+                ...form,
+                title: e.target.value,
+                slug: form.slug || slugify(e.target.value),
+              })
+            }
+          />
         </div>
         <div>
           <Label>Slug (URL)</Label>
-          <Input required maxLength={120} value={form.slug}
-            onChange={(e) => setForm({ ...form, slug: slugify(e.target.value) })} />
+          <Input
+            required
+            maxLength={120}
+            value={form.slug}
+            onChange={(e) => setForm({ ...form, slug: slugify(e.target.value) })}
+          />
         </div>
         <div>
           <Label>Description</Label>
-          <Textarea rows={4} value={form.description} onChange={(e) => setForm({ ...form, description: e.target.value })} />
+          <Textarea
+            rows={4}
+            value={form.description}
+            onChange={(e) => setForm({ ...form, description: e.target.value })}
+          />
         </div>
         <div className="grid gap-4 sm:grid-cols-3">
           <div>
             <Label>Price (₹)</Label>
-            <Input type="number" required min="0" step="1" value={form.price} onChange={(e) => setForm({ ...form, price: e.target.value })} />
+            <Input
+              type="number"
+              required
+              min="0"
+              step="1"
+              value={form.price}
+              onChange={(e) => setForm({ ...form, price: e.target.value })}
+            />
           </div>
           <div>
             <Label>Compare-at price (₹)</Label>
-            <Input type="number" min="0" step="1" value={form.compare_at_price} onChange={(e) => setForm({ ...form, compare_at_price: e.target.value })} />
+            <Input
+              type="number"
+              min="0"
+              step="1"
+              value={form.compare_at_price}
+              onChange={(e) => setForm({ ...form, compare_at_price: e.target.value })}
+            />
           </div>
           <div>
             <Label>Stock</Label>
-            <Input type="number" required min="0" step="1" value={form.stock} onChange={(e) => setForm({ ...form, stock: e.target.value })} />
+            <Input
+              type="number"
+              required
+              min="0"
+              step="1"
+              value={form.stock}
+              onChange={(e) => setForm({ ...form, stock: e.target.value })}
+            />
           </div>
         </div>
         <div className="grid gap-4 sm:grid-cols-2">
           <div>
             <Label>Category</Label>
-            <select value={form.category_id} onChange={(e) => setForm({ ...form, category_id: e.target.value })}
-              className="w-full h-10 rounded-md border border-input bg-background px-3 text-sm">
+            <select
+              value={form.category_id}
+              onChange={(e) => setForm({ ...form, category_id: e.target.value })}
+              className="w-full h-10 rounded-md border border-input bg-background px-3 text-sm"
+            >
               <option value="">— None —</option>
-              {categories.map((c) => <option key={c.id} value={c.id}>{c.name}</option>)}
+              {categories.map((c) => (
+                <option key={c.id} value={c.id}>
+                  {c.name}
+                </option>
+              ))}
             </select>
           </div>
           <div>
             <Label>Brand</Label>
-            <Input maxLength={100} value={form.brand} onChange={(e) => setForm({ ...form, brand: e.target.value })} />
+            <Input
+              maxLength={100}
+              value={form.brand}
+              onChange={(e) => setForm({ ...form, brand: e.target.value })}
+            />
           </div>
         </div>
       </div>
@@ -166,21 +243,46 @@ export function AdminProductForm({ productId }: { productId?: string }) {
         <Label>Product image</Label>
         {form.image_url && (
           <div className="relative inline-block">
-            <img src={form.image_url} alt="Product" className="h-32 w-32 rounded-md object-cover border border-border" />
-            <button type="button" onClick={() => setForm({ ...form, image_url: "" })}
-              className="absolute -top-2 -right-2 flex h-6 w-6 items-center justify-center rounded-full bg-destructive text-destructive-foreground">
+            <img
+              src={form.image_url}
+              alt="Product"
+              className="h-32 w-32 rounded-md object-cover border border-border"
+            />
+            <button
+              type="button"
+              onClick={() => setForm({ ...form, image_url: "" })}
+              className="absolute -top-2 -right-2 flex h-6 w-6 items-center justify-center rounded-full bg-destructive text-destructive-foreground"
+            >
               <X className="h-3 w-3" />
             </button>
           </div>
         )}
         <div className="flex flex-wrap items-center gap-3">
           <label className="inline-flex items-center gap-2 cursor-pointer rounded-md border border-border bg-card px-3 py-2 text-sm hover:bg-muted">
-            {uploading ? <Loader2 className="h-4 w-4 animate-spin" /> : <Upload className="h-4 w-4" />}
+            {uploading ? (
+              <Loader2 className="h-4 w-4 animate-spin" />
+            ) : (
+              <Upload className="h-4 w-4" />
+            )}
             <span>{uploading ? "Uploading…" : "Upload image"}</span>
-            <input type="file" accept="image/*" className="hidden" disabled={uploading}
-              onChange={(e) => { const f = e.target.files?.[0]; if (f) handleUpload(f); e.target.value = ""; }} />
+            <input
+              type="file"
+              accept="image/*"
+              className="hidden"
+              disabled={uploading}
+              onChange={(e) => {
+                const f = e.target.files?.[0];
+                if (f) handleUpload(f);
+                e.target.value = "";
+              }}
+            />
           </label>
-          <Input placeholder="…or paste image URL" value={form.image_url} onChange={(e) => setForm({ ...form, image_url: e.target.value })} className="max-w-md" />
+          <Input
+            placeholder="…or paste image URL"
+            value={form.image_url}
+            onChange={(e) => setForm({ ...form, image_url: e.target.value })}
+            className="max-w-md"
+          />
         </div>
       </div>
 
@@ -197,15 +299,30 @@ export function AdminProductForm({ productId }: { productId?: string }) {
             <Label>Featured</Label>
             <p className="text-xs text-muted-foreground">Show in featured deals</p>
           </div>
-          <Switch checked={form.featured} onCheckedChange={(v) => setForm({ ...form, featured: v })} />
+          <Switch
+            checked={form.featured}
+            onCheckedChange={(v) => setForm({ ...form, featured: v })}
+          />
         </div>
       </div>
 
       <div className="flex gap-3">
-        <Button type="submit" disabled={saving} className="bg-primary text-primary-foreground hover:bg-primary/90">
-          {saving ? <Loader2 className="h-4 w-4 animate-spin" /> : productId ? "Save changes" : "Create product"}
+        <Button
+          type="submit"
+          disabled={saving}
+          className="bg-primary text-primary-foreground hover:bg-primary/90"
+        >
+          {saving ? (
+            <Loader2 className="h-4 w-4 animate-spin" />
+          ) : productId ? (
+            "Save changes"
+          ) : (
+            "Create product"
+          )}
         </Button>
-        <Button type="button" variant="outline" onClick={() => navigate({ to: "/admin/products" })}>Cancel</Button>
+        <Button type="button" variant="outline" onClick={() => navigate({ to: "/admin/products" })}>
+          Cancel
+        </Button>
       </div>
     </form>
   );
