@@ -65,8 +65,11 @@ function FooterCol({ title, links }: { title: string; links: LinkItem[] }) {
       <ul className="mt-5 space-y-3 text-sm">
         {links.map((l) => (
           <li key={l.label}>
-            {/* @ts-expect-error dynamic to */}
-            <Link to={l.to} params={l.params} className="text-white/80 hover:text-white transition">
+            <Link
+              to={l.to as "/login"}
+              params={l.params as never}
+              className="text-white/80 hover:text-white transition"
+            >
               {l.label}
             </Link>
           </li>
