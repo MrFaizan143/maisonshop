@@ -30,12 +30,12 @@ function AdminProductsPage() {
   const [rows, setRows] = useState<Row[]>([]);
   const [loading, setLoading] = useState(true);
 
-  const load = () => {
-    return supabase
+  const load = async () => {
+    const { data } = await supabase
       .from("products")
       .select("id, title, slug, price, stock, active, featured, image_url, category_id")
-      .order("created_at", { ascending: false })
-      .then(({ data }) => setRows((data ?? []) as Row[]));
+      .order("created_at", { ascending: false });
+    setRows((data ?? []) as Row[]);
   };
 
   useEffect(() => {

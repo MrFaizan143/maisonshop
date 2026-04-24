@@ -112,9 +112,14 @@ function AdminPage() {
         </table>
       </div>
 
-      <p className="mt-6 text-sm text-muted-foreground">
-        Product/category management UI is coming soon. For now I've seeded sample products — you can ask in chat to add or edit products.
-      </p>
+      <div className="mt-6 flex flex-wrap gap-3">
+        <Link to="/admin/products" className="inline-flex items-center rounded-full bg-primary px-5 py-2.5 text-sm font-semibold text-primary-foreground hover:bg-primary/90">
+          Manage products
+        </Link>
+        <Link to="/admin/products/new" className="inline-flex items-center rounded-full border border-border bg-card px-5 py-2.5 text-sm font-semibold hover:bg-muted">
+          Add new product
+        </Link>
+      </div>
     </div>
   );
 }
