@@ -43,9 +43,9 @@ function ProductPage() {
   const { product } = Route.useLoaderData();
   const addItem = useCartStore((s) => s.addItem);
   const [qty, setQty] = useState(1);
-  const allImages = product.image_url
-    ? [product.image_url, ...(product.images ?? [])].filter((v, i, a) => a.indexOf(v) === i)
-    : product.images ?? [];
+  const allImages: string[] = product.image_url
+    ? [product.image_url, ...(product.images ?? [])].filter((v: string, i: number, a: string[]) => a.indexOf(v) === i)
+    : (product.images ?? []);
   const [activeImg, setActiveImg] = useState<string | null>(allImages[0] ?? null);
 
   const discount = discountPct(Number(product.price), product.compare_at_price ? Number(product.compare_at_price) : null);
