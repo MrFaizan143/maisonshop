@@ -34,7 +34,9 @@ function OrdersPage() {
     if (!user) return;
     supabase
       .from("orders")
-      .select("id, order_number, status, total, placed_at, order_items(product_title, quantity, product_image)")
+      .select(
+        "id, order_number, status, total, placed_at, order_items(product_title, quantity, product_image)",
+      )
       .eq("user_id", user.id)
       .order("placed_at", { ascending: false })
       .then(({ data }) => {
@@ -43,7 +45,12 @@ function OrdersPage() {
       });
   }, [user, authLoading, navigate]);
 
-  if (loading || authLoading) return <div className="py-20 text-center"><Loader2 className="mx-auto h-6 w-6 animate-spin" /></div>;
+  if (loading || authLoading)
+    return (
+      <div className="py-20 text-center">
+        <Loader2 className="mx-auto h-6 w-6 animate-spin" />
+      </div>
+    );
 
   return (
     <div className="mx-auto max-w-4xl px-4 py-6">
@@ -52,7 +59,9 @@ function OrdersPage() {
         <div className="rounded-xl border border-dashed border-border bg-card p-12 text-center">
           <Package className="mx-auto h-12 w-12 text-muted-foreground/50" />
           <p className="mt-3 text-muted-foreground">No orders yet.</p>
-          <Link to="/" className="mt-4 inline-block"><Button>Start shopping</Button></Link>
+          <Link to="/" className="mt-4 inline-block">
+            <Button>Start shopping</Button>
+          </Link>
         </div>
       ) : (
         <div className="space-y-3">
@@ -61,16 +70,22 @@ function OrdersPage() {
               <div className="flex flex-wrap items-center justify-between gap-2">
                 <div>
                   <div className="font-semibold">{o.order_number}</div>
-                  <div className="text-xs text-muted-foreground">{new Date(o.placed_at).toLocaleString()}</div>
+                  <div className="text-xs text-muted-foreground">
+                    {new Date(o.placed_at).toLocaleString()}
+                  </div>
                 </div>
                 <div className="flex items-center gap-3">
-                  <span className="rounded-full bg-accent/15 px-3 py-1 text-xs font-semibold text-accent uppercase">{o.status}</span>
+                  <span className="rounded-full bg-accent/15 px-3 py-1 text-xs font-semibold text-accent uppercase">
+                    {o.status}
+                  </span>
                   <span className="font-bold">{formatINR(o.total)}</span>
                 </div>
               </div>
               <div className="mt-3 text-sm text-muted-foreground">
                 {o.order_items.map((it, i) => (
-                  <div key={i}>{it.quantity} × {it.product_title}</div>
+                  <div key={i}>
+                    {it.quantity} × {it.product_title}
+                  </div>
                 ))}
               </div>
             </div>

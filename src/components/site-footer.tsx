@@ -8,10 +8,13 @@ export function SiteFooter() {
           <div>
             <div className="flex items-baseline gap-1">
               <span className="font-editorial text-3xl tracking-tight">Maison</span>
-              <span className="font-mono text-[10px] uppercase tracking-[0.2em] text-white/50">— shop</span>
+              <span className="font-mono text-[10px] uppercase tracking-[0.2em] text-white/50">
+                — shop
+              </span>
             </div>
             <p className="mt-4 max-w-xs text-sm text-white/60 leading-relaxed">
-              A modern department store. Editorial fashion. Lush food. Sharp electronics. One destination.
+              A modern department store. Editorial fashion. Lush food. Sharp electronics. One
+              destination.
             </p>
           </div>
 
@@ -35,7 +38,9 @@ export function SiteFooter() {
             ]}
           />
           <div>
-            <h3 className="font-mono text-[11px] uppercase tracking-[0.2em] text-white/50">Promise</h3>
+            <h3 className="font-mono text-[11px] uppercase tracking-[0.2em] text-white/50">
+              Promise
+            </h3>
             <ul className="mt-5 space-y-3 text-sm text-white/80">
               <li>Cash on Delivery</li>
               <li>Free shipping over ₹499</li>

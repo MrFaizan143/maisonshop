@@ -45,7 +45,9 @@ export function SiteHeader() {
         {/* Brand — typographic mark */}
         <Link to="/" className="flex items-baseline gap-1 shrink-0">
           <span className="font-editorial text-2xl tracking-tight">Maison</span>
-          <span className="font-mono text-[10px] uppercase tracking-[0.2em] text-white/60">— shop</span>
+          <span className="font-mono text-[10px] uppercase tracking-[0.2em] text-white/60">
+            — shop
+          </span>
         </Link>
 
         {/* Desktop nav */}
@@ -81,40 +83,66 @@ export function SiteHeader() {
           {user ? (
             <DropdownMenu>
               <DropdownMenuTrigger asChild>
-                <button className="grid h-10 w-10 place-items-center rounded-full hover:bg-white/10 transition" aria-label="Account">
+                <button
+                  className="grid h-10 w-10 place-items-center rounded-full hover:bg-white/10 transition"
+                  aria-label="Account"
+                >
                   <User className="h-[18px] w-[18px]" />
                 </button>
               </DropdownMenuTrigger>
-              <DropdownMenuContent align="end" className="w-56 bg-[oklch(0.08_0_0)] text-white border-[oklch(0.18_0_0)]">
-                <DropdownMenuLabel className="truncate text-white/70 text-xs uppercase tracking-wider">{user.email}</DropdownMenuLabel>
+              <DropdownMenuContent
+                align="end"
+                className="w-56 bg-[oklch(0.08_0_0)] text-white border-[oklch(0.18_0_0)]"
+              >
+                <DropdownMenuLabel className="truncate text-white/70 text-xs uppercase tracking-wider">
+                  {user.email}
+                </DropdownMenuLabel>
                 <DropdownMenuSeparator className="bg-[oklch(0.18_0_0)]" />
-                <DropdownMenuItem onClick={() => navigate({ to: "/account/orders" })} className="focus:bg-white/10 focus:text-white">
+                <DropdownMenuItem
+                  onClick={() => navigate({ to: "/account/orders" })}
+                  className="focus:bg-white/10 focus:text-white"
+                >
                   <Package className="mr-2 h-4 w-4" /> Orders
                 </DropdownMenuItem>
-                <DropdownMenuItem onClick={() => navigate({ to: "/account/addresses" })} className="focus:bg-white/10 focus:text-white">
+                <DropdownMenuItem
+                  onClick={() => navigate({ to: "/account/addresses" })}
+                  className="focus:bg-white/10 focus:text-white"
+                >
                   <User className="mr-2 h-4 w-4" /> Addresses
                 </DropdownMenuItem>
                 {isAdmin && (
                   <>
                     <DropdownMenuSeparator className="bg-[oklch(0.18_0_0)]" />
-                    <DropdownMenuItem onClick={() => navigate({ to: "/admin" })} className="focus:bg-white/10 focus:text-white">
+                    <DropdownMenuItem
+                      onClick={() => navigate({ to: "/admin" })}
+                      className="focus:bg-white/10 focus:text-white"
+                    >
                       <Shield className="mr-2 h-4 w-4" /> Admin
                     </DropdownMenuItem>
                   </>
                 )}
                 <DropdownMenuSeparator className="bg-[oklch(0.18_0_0)]" />
-                <DropdownMenuItem onClick={() => signOut().then(() => navigate({ to: "/" }))} className="focus:bg-white/10 focus:text-white">
+                <DropdownMenuItem
+                  onClick={() => signOut().then(() => navigate({ to: "/" }))}
+                  className="focus:bg-white/10 focus:text-white"
+                >
                   <LogOut className="mr-2 h-4 w-4" /> Sign out
                 </DropdownMenuItem>
               </DropdownMenuContent>
             </DropdownMenu>
           ) : (
-            <Link to="/login" className="grid h-10 w-10 place-items-center rounded-full hover:bg-white/10 transition">
+            <Link
+              to="/login"
+              className="grid h-10 w-10 place-items-center rounded-full hover:bg-white/10 transition"
+            >
               <User className="h-[18px] w-[18px]" />
             </Link>
           )}
 
-          <Link to="/cart" className="relative grid h-10 w-10 place-items-center rounded-full hover:bg-white/10 transition">
+          <Link
+            to="/cart"
+            className="relative grid h-10 w-10 place-items-center rounded-full hover:bg-white/10 transition"
+          >
             <ShoppingBag className="h-[18px] w-[18px]" />
             {totalCount > 0 && (
               <span className="absolute top-1 right-1 grid h-4 min-w-4 place-items-center rounded-full bg-white px-1 text-[10px] font-semibold text-black">
@@ -128,7 +156,11 @@ export function SiteHeader() {
             className="grid h-10 w-10 place-items-center rounded-full hover:bg-white/10 transition lg:hidden"
             aria-label="Menu"
           >
-            {mobileOpen ? <X className="h-[18px] w-[18px]" /> : <Menu className="h-[18px] w-[18px]" />}
+            {mobileOpen ? (
+              <X className="h-[18px] w-[18px]" />
+            ) : (
+              <Menu className="h-[18px] w-[18px]" />
+            )}
           </button>
         </div>
       </div>
@@ -136,7 +168,10 @@ export function SiteHeader() {
       {/* Search expander */}
       {searchOpen && (
         <div className="border-t border-[oklch(0.18_0_0)] bg-[oklch(0.08_0_0)] animate-in fade-in slide-in-from-top-2 duration-200">
-          <form onSubmit={onSearch} className="mx-auto flex max-w-[1400px] items-center gap-3 px-5 py-4 sm:px-8">
+          <form
+            onSubmit={onSearch}
+            className="mx-auto flex max-w-[1400px] items-center gap-3 px-5 py-4 sm:px-8"
+          >
             <Search className="h-4 w-4 text-white/50" />
             <input
               autoFocus
@@ -145,7 +180,11 @@ export function SiteHeader() {
               placeholder="Search products, brands, categories…"
               className="flex-1 bg-transparent text-white placeholder:text-white/40 outline-none text-base"
             />
-            <button type="button" onClick={() => setSearchOpen(false)} className="text-xs uppercase tracking-wider text-white/60 hover:text-white">
+            <button
+              type="button"
+              onClick={() => setSearchOpen(false)}
+              className="text-xs uppercase tracking-wider text-white/60 hover:text-white"
+            >
               Close
             </button>
           </form>

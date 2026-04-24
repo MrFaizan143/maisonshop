@@ -1,6 +1,15 @@
 import { createFileRoute, Link, notFound } from "@tanstack/react-router";
 import { useState } from "react";
-import { Star, ShoppingCart, Truck, Wallet, RotateCcw, ShieldCheck, Minus, Plus } from "lucide-react";
+import {
+  Star,
+  ShoppingCart,
+  Truck,
+  Wallet,
+  RotateCcw,
+  ShieldCheck,
+  Minus,
+  Plus,
+} from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { supabase } from "@/integrations/supabase/client";
 import { useCartStore } from "@/stores/cart-store";
@@ -22,11 +31,18 @@ export const Route = createFileRoute("/product/$slug")({
   head: ({ loaderData }) => ({
     meta: loaderData
       ? [
-          { title: `${loaderData.product.title} — ShopHub` },
-          { name: "description", content: loaderData.product.description.slice(0, 160) || `Buy ${loaderData.product.title} on ShopHub.` },
+          { title: `${loaderData.product.title} — Maison` },
+          {
+            name: "description",
+            content:
+              loaderData.product.description.slice(0, 160) ||
+              `Buy ${loaderData.product.title} on Maison.`,
+          },
           { property: "og:title", content: loaderData.product.title },
           { property: "og:description", content: loaderData.product.description.slice(0, 160) },
-          ...(loaderData.product.image_url ? [{ property: "og:image", content: loaderData.product.image_url }] : []),
+          ...(loaderData.product.image_url
+            ? [{ property: "og:image", content: loaderData.product.image_url }]
+            : []),
         ]
       : [],
   }),
@@ -34,7 +50,9 @@ export const Route = createFileRoute("/product/$slug")({
   notFoundComponent: () => (
     <div className="mx-auto max-w-3xl px-4 py-24 text-center">
       <h1 className="text-2xl font-semibold">Product not found</h1>
-      <Link to="/" className="mt-4 inline-block text-primary underline">Back home</Link>
+      <Link to="/" className="mt-4 inline-block text-primary underline">
+        Back home
+      </Link>
     </div>
   ),
 });
@@ -44,11 +62,16 @@ function ProductPage() {
   const addItem = useCartStore((s) => s.addItem);
   const [qty, setQty] = useState(1);
   const allImages: string[] = product.image_url
-    ? [product.image_url, ...(product.images ?? [])].filter((v: string, i: number, a: string[]) => a.indexOf(v) === i)
+    ? [product.image_url, ...(product.images ?? [])].filter(
+        (v: string, i: number, a: string[]) => a.indexOf(v) === i,
+      )
     : (product.images ?? []);
   const [activeImg, setActiveImg] = useState<string | null>(allImages[0] ?? null);
 
-  const discount = discountPct(Number(product.price), product.compare_at_price ? Number(product.compare_at_price) : null);
+  const discount = discountPct(
+    Number(product.price),
+    product.compare_at_price ? Number(product.compare_at_price) : null,
+  );
 
   const handleAdd = () => {
     addItem(
@@ -70,16 +93,23 @@ function ProductPage() {
   return (
     <div className="mx-auto max-w-7xl px-3 py-4 sm:px-6 sm:py-6">
       <nav className="mb-3 text-xs text-muted-foreground">
-        <Link to="/" className="hover:text-foreground">Home</Link>
+        <Link to="/" className="hover:text-foreground">
+          Home
+        </Link>
         {product.categories && (
           <>
             {" / "}
-            <Link to="/category/$slug" params={{ slug: product.categories.slug }} className="hover:text-foreground">
+            <Link
+              to="/category/$slug"
+              params={{ slug: product.categories.slug }}
+              className="hover:text-foreground"
+            >
               {product.categories.name}
             </Link>
           </>
         )}
-        {" / "}<span className="text-foreground">{product.title}</span>
+        {" / "}
+        <span className="text-foreground">{product.title}</span>
       </nav>
 
       <div className="grid gap-6 lg:grid-cols-[1.1fr_1fr] lg:gap-10">
@@ -89,7 +119,9 @@ function ProductPage() {
             {activeImg ? (
               <img src={activeImg} alt={product.title} className="h-full w-full object-contain" />
             ) : (
-              <div className="flex h-full items-center justify-center text-muted-foreground text-sm">No image</div>
+              <div className="flex h-full items-center justify-center text-muted-foreground text-sm">
+                No image
+              </div>
             )}
           </div>
           {allImages.length > 1 && (
@@ -113,7 +145,9 @@ function ProductPage() {
         {/* Details */}
         <div className="flex flex-col">
           {product.brand && (
-            <p className="text-xs font-semibold uppercase tracking-wide text-muted-foreground">{product.brand}</p>
+            <p className="text-xs font-semibold uppercase tracking-wide text-muted-foreground">
+              {product.brand}
+            </p>
           )}
           <h1 className="mt-1 text-2xl font-semibold leading-tight sm:text-3xl">{product.title}</h1>
 
@@ -128,14 +162,17 @@ function ProductPage() {
 
           <div className="mt-4 flex items-baseline gap-3">
             <span className="text-3xl font-bold">{formatINR(Number(product.price))}</span>
-            {product.compare_at_price && Number(product.compare_at_price) > Number(product.price) && (
-              <>
-                <span className="text-base text-muted-foreground line-through">
-                  {formatINR(Number(product.compare_at_price))}
-                </span>
-                {discount && <span className="text-sm font-semibold text-deal">{discount}% off</span>}
-              </>
-            )}
+            {product.compare_at_price &&
+              Number(product.compare_at_price) > Number(product.price) && (
+                <>
+                  <span className="text-base text-muted-foreground line-through">
+                    {formatINR(Number(product.compare_at_price))}
+                  </span>
+                  {discount && (
+                    <span className="text-sm font-semibold text-deal">{discount}% off</span>
+                  )}
+                </>
+              )}
           </div>
           <p className="text-xs text-muted-foreground mt-1">Inclusive of all taxes</p>
 

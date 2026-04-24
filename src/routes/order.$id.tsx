@@ -103,7 +103,9 @@ function OrderConfirmationPage() {
             <Wallet className="h-4 w-4" /> Payment
           </h2>
           <p className="mt-2 text-base font-semibold">Cash on Delivery</p>
-          <p className="text-xs text-muted-foreground">Pay {formatINR(order.total)} when your order arrives.</p>
+          <p className="text-xs text-muted-foreground">
+            Pay {formatINR(order.total)} when your order arrives.
+          </p>
         </div>
         <div className="rounded-xl border border-border bg-card p-5 shadow-card">
           <h2 className="flex items-center gap-2 text-sm font-semibold uppercase tracking-wide text-muted-foreground">
@@ -111,8 +113,9 @@ function OrderConfirmationPage() {
           </h2>
           <p className="mt-2 text-sm font-medium">{order.ship_full_name}</p>
           <p className="text-xs text-muted-foreground">
-            {order.ship_line1}{order.ship_line2 ? `, ${order.ship_line2}` : ""}, {order.ship_city},{" "}
-            {order.ship_state} {order.ship_pincode}
+            {order.ship_line1}
+            {order.ship_line2 ? `, ${order.ship_line2}` : ""}, {order.ship_city}, {order.ship_state}{" "}
+            {order.ship_pincode}
           </p>
         </div>
       </div>

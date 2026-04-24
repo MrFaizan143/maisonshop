@@ -9,7 +9,7 @@ import { useAuth } from "@/contexts/auth-context";
 import { toast } from "sonner";
 
 export const Route = createFileRoute("/signup")({
-  head: () => ({ meta: [{ title: "Create account — ShopHub" }] }),
+  head: () => ({ meta: [{ title: "Create account — Maison" }] }),
   component: SignupPage,
 });
 
@@ -43,14 +43,22 @@ function SignupPage() {
   };
 
   return (
-    <div className="mx-auto flex min-h-[70vh] max-w-md items-center px-4 py-10">
-      <div className="w-full rounded-xl border border-border bg-card p-6 shadow-card sm:p-8">
-        <h1 className="text-2xl font-semibold">Create account</h1>
-        <p className="mt-1 text-sm text-muted-foreground">Start shopping in seconds.</p>
+    <div className="mx-auto flex min-h-[80vh] max-w-[1400px] items-center px-5 py-16 sm:px-8">
+      <div className="w-full max-w-sm">
+        <p className="font-mono text-[11px] uppercase tracking-[0.25em] text-muted-foreground">
+          — Account
+        </p>
+        <h1 className="mt-4 editorial-headline text-5xl">Join us.</h1>
+        <p className="mt-3 text-sm text-muted-foreground">Start shopping in seconds.</p>
 
-        <form onSubmit={handleSubmit} className="mt-6 space-y-4">
+        <form onSubmit={handleSubmit} className="mt-8 space-y-5">
           <div>
-            <Label htmlFor="email">Email</Label>
+            <Label
+              htmlFor="email"
+              className="font-mono text-[10px] uppercase tracking-[0.2em] text-muted-foreground"
+            >
+              Email
+            </Label>
             <Input
               id="email"
               type="email"
@@ -59,10 +67,16 @@ function SignupPage() {
               onChange={(e) => setEmail(e.target.value)}
               placeholder="you@example.com"
               autoComplete="email"
+              className="mt-1.5 rounded-none border-x-0 border-t-0 border-b border-border bg-transparent px-0 focus-visible:ring-0 focus-visible:border-foreground"
             />
           </div>
           <div>
-            <Label htmlFor="password">Password (min 6 chars)</Label>
+            <Label
+              htmlFor="password"
+              className="font-mono text-[10px] uppercase tracking-[0.2em] text-muted-foreground"
+            >
+              Password (min 6 chars)
+            </Label>
             <Input
               id="password"
               type="password"
@@ -71,20 +85,21 @@ function SignupPage() {
               value={password}
               onChange={(e) => setPassword(e.target.value)}
               autoComplete="new-password"
+              className="mt-1.5 rounded-none border-x-0 border-t-0 border-b border-border bg-transparent px-0 focus-visible:ring-0 focus-visible:border-foreground"
             />
           </div>
           <Button
             type="submit"
             disabled={loading}
-            className="w-full bg-primary text-primary-foreground hover:bg-primary/90"
+            className="w-full rounded-none bg-foreground text-background hover:bg-foreground/90 font-mono text-[11px] uppercase tracking-[0.22em]"
           >
             {loading ? <Loader2 className="h-4 w-4 animate-spin" /> : "Create account"}
           </Button>
         </form>
 
-        <p className="mt-4 text-sm text-center text-muted-foreground">
+        <p className="mt-6 text-sm text-muted-foreground">
           Already have an account?{" "}
-          <Link to="/login" className="font-semibold text-primary hover:underline">
+          <Link to="/login" className="font-semibold text-foreground hover:underline">
             Sign in
           </Link>
         </p>

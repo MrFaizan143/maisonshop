@@ -53,7 +53,7 @@
   --popover: oklch(1 0 0);
   --popover-foreground: oklch(0.12 0 0);
 
-  --primary: oklch(0.12 0 0);               /* near-black */
+  --primary: oklch(0.12 0 0); /* near-black */
   --primary-foreground: oklch(0.99 0 0);
 
   --secondary: oklch(0.97 0 0);
@@ -62,7 +62,7 @@
   --muted: oklch(0.96 0 0);
   --muted-foreground: oklch(0.5 0 0);
 
-  --accent: oklch(0.12 0 0);                /* monochrome accent by default */
+  --accent: oklch(0.12 0 0); /* monochrome accent by default */
   --accent-foreground: oklch(0.99 0 0);
 
   --destructive: oklch(0.58 0.22 25);
@@ -94,7 +94,7 @@
   --card-foreground: oklch(0.08 0 0);
   --primary: oklch(0.08 0 0);
   --primary-foreground: oklch(0.99 0 0);
-  --accent: oklch(0.55 0.08 25);            /* muted terracotta */
+  --accent: oklch(0.55 0.08 25); /* muted terracotta */
   --accent-foreground: oklch(0.99 0 0);
   --muted: oklch(0.94 0 0);
   --muted-foreground: oklch(0.42 0 0);
@@ -108,13 +108,13 @@
 /* FOOD / GROCERY — organic, lush, earth tones */
 [data-theme="grocery"] {
   --radius: 1.25rem;
-  --background: oklch(0.97 0.015 90);       /* cream */
+  --background: oklch(0.97 0.015 90); /* cream */
   --foreground: oklch(0.22 0.04 60);
   --card: oklch(0.985 0.012 90);
   --card-foreground: oklch(0.22 0.04 60);
-  --primary: oklch(0.42 0.08 145);          /* sage / forest */
+  --primary: oklch(0.42 0.08 145); /* sage / forest */
   --primary-foreground: oklch(0.97 0.015 90);
-  --accent: oklch(0.62 0.16 45);            /* terracotta */
+  --accent: oklch(0.62 0.16 45); /* terracotta */
   --accent-foreground: oklch(0.99 0 0);
   --secondary: oklch(0.93 0.025 90);
   --muted: oklch(0.93 0.025 90);
@@ -132,7 +132,7 @@
   --background: oklch(0.98 0.003 250);
   --foreground: oklch(0.12 0.01 250);
   --primary: oklch(0.18 0.02 250);
-  --accent: oklch(0.65 0.2 250);            /* electric blue */
+  --accent: oklch(0.65 0.2 250); /* electric blue */
   --accent-foreground: oklch(0.99 0 0);
   --border: oklch(0.9 0.005 250);
   --ring: oklch(0.65 0.2 250);
@@ -148,7 +148,7 @@
   --card: oklch(0.99 0.008 60);
   --primary: oklch(0.32 0.04 40);
   --primary-foreground: oklch(0.97 0.012 60);
-  --accent: oklch(0.7 0.1 55);              /* warm clay */
+  --accent: oklch(0.7 0.1 55); /* warm clay */
   --accent-foreground: oklch(0.15 0.02 40);
   --muted: oklch(0.93 0.018 60);
   --muted-foreground: oklch(0.45 0.025 50);
@@ -165,7 +165,7 @@
   --card: oklch(0.99 0.008 15);
   --primary: oklch(0.25 0.04 350);
   --primary-foreground: oklch(0.99 0.005 15);
-  --accent: oklch(0.78 0.09 15);            /* powder blush */
+  --accent: oklch(0.78 0.09 15); /* powder blush */
   --accent-foreground: oklch(0.18 0.02 350);
   --muted: oklch(0.94 0.02 15);
   --muted-foreground: oklch(0.45 0.025 350);
@@ -209,10 +209,16 @@
     font-family: var(--font-sans);
     -webkit-font-smoothing: antialiased;
     text-rendering: optimizeLegibility;
-    transition: background-color 0.6s ease, color 0.6s ease;
+    transition:
+      background-color 0.6s ease,
+      color 0.6s ease;
   }
 
-  h1, h2, h3, h4, h5 {
+  h1,
+  h2,
+  h3,
+  h4,
+  h5 {
     font-family: var(--font-display);
     font-weight: 500;
     letter-spacing: -0.02em;
@@ -220,21 +226,43 @@
 
   /* Themed scope transitions */
   [data-theme] {
-    transition: background-color 0.6s ease, color 0.6s ease;
+    transition:
+      background-color 0.6s ease,
+      color 0.6s ease;
   }
 }
 
 @layer utilities {
-  .text-balance { text-wrap: balance; }
-  .bg-gradient-hero { background: var(--gradient-hero); }
-  .bg-gradient-deal { background: var(--gradient-deal); }
-  .shadow-card { box-shadow: var(--shadow-card); }
-  .shadow-pop { box-shadow: var(--shadow-pop); }
-  .text-deal { color: var(--color-deal); }
-  .text-success { color: var(--color-success); }
-  .bg-deal { background-color: var(--color-deal); }
-  .font-editorial { font-family: var(--font-editorial); }
-  .font-display { font-family: var(--font-display); }
+  .text-balance {
+    text-wrap: balance;
+  }
+  .bg-gradient-hero {
+    background: var(--gradient-hero);
+  }
+  .bg-gradient-deal {
+    background: var(--gradient-deal);
+  }
+  .shadow-card {
+    box-shadow: var(--shadow-card);
+  }
+  .shadow-pop {
+    box-shadow: var(--shadow-pop);
+  }
+  .text-deal {
+    color: var(--color-deal);
+  }
+  .text-success {
+    color: var(--color-success);
+  }
+  .bg-deal {
+    background-color: var(--color-deal);
+  }
+  .font-editorial {
+    font-family: var(--font-editorial);
+  }
+  .font-display {
+    font-family: var(--font-display);
+  }
 
   /* Editorial display headline — for fashion */
   .editorial-headline {
@@ -270,5 +298,21 @@
   .grain {
     background-image: radial-gradient(oklch(0 0 0 / 0.04) 1px, transparent 1px);
     background-size: 3px 3px;
+  }
+
+  /* Announcement ticker */
+  @keyframes ticker {
+    from {
+      transform: translateX(0);
+    }
+    to {
+      transform: translateX(-50%);
+    }
+  }
+  .announcement-track {
+    animation: ticker 28s linear infinite;
+  }
+  .announcement-track:hover {
+    animation-play-state: paused;
   }
 }
