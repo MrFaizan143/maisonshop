@@ -1,7 +1,6 @@
 import { useState, type FormEvent } from "react";
 import { Link, useNavigate, useRouterState } from "@tanstack/react-router";
-import { Search, ShoppingCart, User, Menu, X, Package, LogOut, Shield } from "lucide-react";
-import { Button } from "@/components/ui/button";
+import { Search, ShoppingBag, User, Menu, X, Package, LogOut, Shield } from "lucide-react";
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -10,17 +9,16 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
-import { Input } from "@/components/ui/input";
 import { useCartStore } from "@/stores/cart-store";
 import { useAuth } from "@/contexts/auth-context";
 import { cn } from "@/lib/utils";
 
 const CATEGORY_LINKS = [
-  { slug: "electronics", label: "Electronics" },
   { slug: "fashion", label: "Fashion" },
+  { slug: "grocery", label: "Food" },
+  { slug: "electronics", label: "Electronics" },
   { slug: "home", label: "Home" },
   { slug: "beauty", label: "Beauty" },
-  { slug: "grocery", label: "Grocery" },
 ];
 
 export function SiteHeader() {
@@ -29,6 +27,7 @@ export function SiteHeader() {
   const { user, isAdmin, signOut } = useAuth();
   const [q, setQ] = useState("");
   const [mobileOpen, setMobileOpen] = useState(false);
+  const [searchOpen, setSearchOpen] = useState(false);
   const path = useRouterState({ select: (s) => s.location.pathname });
 
   const onSearch = (e: FormEvent) => {
@@ -36,145 +35,134 @@ export function SiteHeader() {
     if (q.trim()) {
       navigate({ to: "/search", search: { q: q.trim() } });
       setMobileOpen(false);
+      setSearchOpen(false);
     }
   };
 
   return (
-    <header className="sticky top-0 z-40 w-full">
-      {/* Top bar */}
-      <div className="bg-primary text-primary-foreground">
-        <div className="mx-auto flex h-14 max-w-7xl items-center gap-3 px-3 sm:gap-4 sm:px-6">
-          <Link to="/" className="flex items-center gap-2 shrink-0">
-            <div className="flex h-9 w-9 items-center justify-center rounded-lg bg-accent text-accent-foreground font-bold text-lg">
-              S
-            </div>
-            <span className="hidden font-display text-xl font-semibold sm:block">ShopHub</span>
+    <header className="sticky top-0 z-40 w-full anchor-mono bg-[oklch(0.08_0_0)] text-[oklch(0.99_0_0)] border-b border-[oklch(0.18_0_0)]">
+      <div className="mx-auto flex h-16 max-w-[1400px] items-center justify-between gap-4 px-5 sm:px-8">
+        {/* Brand — typographic mark */}
+        <Link to="/" className="flex items-baseline gap-1 shrink-0">
+          <span className="font-editorial text-2xl tracking-tight">Maison</span>
+          <span className="font-mono text-[10px] uppercase tracking-[0.2em] text-white/60">— shop</span>
+        </Link>
+
+        {/* Desktop nav */}
+        <nav className="hidden lg:flex items-center gap-7">
+          {CATEGORY_LINKS.map((c) => {
+            const active = path === `/category/${c.slug}`;
+            return (
+              <Link
+                key={c.slug}
+                to="/category/$slug"
+                params={{ slug: c.slug }}
+                className={cn(
+                  "text-[13px] uppercase tracking-[0.18em] font-medium transition-colors",
+                  active ? "text-white" : "text-white/55 hover:text-white",
+                )}
+              >
+                {c.label}
+              </Link>
+            );
+          })}
+        </nav>
+
+        {/* Right: search + account + cart */}
+        <div className="flex items-center gap-1">
+          <button
+            onClick={() => setSearchOpen((v) => !v)}
+            className="grid h-10 w-10 place-items-center rounded-full hover:bg-white/10 transition"
+            aria-label="Search"
+          >
+            <Search className="h-[18px] w-[18px]" />
+          </button>
+
+          {user ? (
+            <DropdownMenu>
+              <DropdownMenuTrigger asChild>
+                <button className="grid h-10 w-10 place-items-center rounded-full hover:bg-white/10 transition" aria-label="Account">
+                  <User className="h-[18px] w-[18px]" />
+                </button>
+              </DropdownMenuTrigger>
+              <DropdownMenuContent align="end" className="w-56 bg-[oklch(0.08_0_0)] text-white border-[oklch(0.18_0_0)]">
+                <DropdownMenuLabel className="truncate text-white/70 text-xs uppercase tracking-wider">{user.email}</DropdownMenuLabel>
+                <DropdownMenuSeparator className="bg-[oklch(0.18_0_0)]" />
+                <DropdownMenuItem onClick={() => navigate({ to: "/account/orders" })} className="focus:bg-white/10 focus:text-white">
+                  <Package className="mr-2 h-4 w-4" /> Orders
+                </DropdownMenuItem>
+                <DropdownMenuItem onClick={() => navigate({ to: "/account/addresses" })} className="focus:bg-white/10 focus:text-white">
+                  <User className="mr-2 h-4 w-4" /> Addresses
+                </DropdownMenuItem>
+                {isAdmin && (
+                  <>
+                    <DropdownMenuSeparator className="bg-[oklch(0.18_0_0)]" />
+                    <DropdownMenuItem onClick={() => navigate({ to: "/admin" })} className="focus:bg-white/10 focus:text-white">
+                      <Shield className="mr-2 h-4 w-4" /> Admin
+                    </DropdownMenuItem>
+                  </>
+                )}
+                <DropdownMenuSeparator className="bg-[oklch(0.18_0_0)]" />
+                <DropdownMenuItem onClick={() => signOut().then(() => navigate({ to: "/" }))} className="focus:bg-white/10 focus:text-white">
+                  <LogOut className="mr-2 h-4 w-4" /> Sign out
+                </DropdownMenuItem>
+              </DropdownMenuContent>
+            </DropdownMenu>
+          ) : (
+            <Link to="/login" className="grid h-10 w-10 place-items-center rounded-full hover:bg-white/10 transition">
+              <User className="h-[18px] w-[18px]" />
+            </Link>
+          )}
+
+          <Link to="/cart" className="relative grid h-10 w-10 place-items-center rounded-full hover:bg-white/10 transition">
+            <ShoppingBag className="h-[18px] w-[18px]" />
+            {totalCount > 0 && (
+              <span className="absolute top-1 right-1 grid h-4 min-w-4 place-items-center rounded-full bg-white px-1 text-[10px] font-semibold text-black">
+                {totalCount}
+              </span>
+            )}
           </Link>
 
-          <form onSubmit={onSearch} className="flex flex-1 max-w-2xl items-center">
-            <Input
+          <button
+            onClick={() => setMobileOpen((v) => !v)}
+            className="grid h-10 w-10 place-items-center rounded-full hover:bg-white/10 transition lg:hidden"
+            aria-label="Menu"
+          >
+            {mobileOpen ? <X className="h-[18px] w-[18px]" /> : <Menu className="h-[18px] w-[18px]" />}
+          </button>
+        </div>
+      </div>
+
+      {/* Search expander */}
+      {searchOpen && (
+        <div className="border-t border-[oklch(0.18_0_0)] bg-[oklch(0.08_0_0)] animate-in fade-in slide-in-from-top-2 duration-200">
+          <form onSubmit={onSearch} className="mx-auto flex max-w-[1400px] items-center gap-3 px-5 py-4 sm:px-8">
+            <Search className="h-4 w-4 text-white/50" />
+            <input
+              autoFocus
               value={q}
               onChange={(e) => setQ(e.target.value)}
-              placeholder="Search products, brands, categories..."
-              className="h-10 rounded-r-none border-0 bg-card text-foreground focus-visible:ring-2 focus-visible:ring-accent"
+              placeholder="Search products, brands, categories…"
+              className="flex-1 bg-transparent text-white placeholder:text-white/40 outline-none text-base"
             />
-            <Button
-              type="submit"
-              size="icon"
-              className="h-10 rounded-l-none bg-accent text-accent-foreground hover:bg-accent/90"
-            >
-              <Search className="h-4 w-4" />
-            </Button>
+            <button type="button" onClick={() => setSearchOpen(false)} className="text-xs uppercase tracking-wider text-white/60 hover:text-white">
+              Close
+            </button>
           </form>
-
-          <div className="flex items-center gap-1 sm:gap-2">
-            {user ? (
-              <DropdownMenu>
-                <DropdownMenuTrigger asChild>
-                  <Button variant="ghost" size="sm" className="h-10 text-primary-foreground hover:bg-white/10 hover:text-primary-foreground gap-2 px-2 sm:px-3">
-                    <User className="h-4 w-4" />
-                    <span className="hidden text-sm md:inline max-w-[100px] truncate">
-                      {user.email?.split("@")[0]}
-                    </span>
-                  </Button>
-                </DropdownMenuTrigger>
-                <DropdownMenuContent align="end" className="w-56">
-                  <DropdownMenuLabel className="truncate">{user.email}</DropdownMenuLabel>
-                  <DropdownMenuSeparator />
-                  <DropdownMenuItem onClick={() => navigate({ to: "/account/orders" })}>
-                    <Package className="mr-2 h-4 w-4" /> My Orders
-                  </DropdownMenuItem>
-                  <DropdownMenuItem onClick={() => navigate({ to: "/account/addresses" })}>
-                    <User className="mr-2 h-4 w-4" /> Addresses
-                  </DropdownMenuItem>
-                  {isAdmin && (
-                    <>
-                      <DropdownMenuSeparator />
-                      <DropdownMenuItem onClick={() => navigate({ to: "/admin" })}>
-                        <Shield className="mr-2 h-4 w-4" /> Admin Panel
-                      </DropdownMenuItem>
-                    </>
-                  )}
-                  <DropdownMenuSeparator />
-                  <DropdownMenuItem onClick={() => signOut().then(() => navigate({ to: "/" }))}>
-                    <LogOut className="mr-2 h-4 w-4" /> Sign out
-                  </DropdownMenuItem>
-                </DropdownMenuContent>
-              </DropdownMenu>
-            ) : (
-              <Link to="/login">
-                <Button variant="ghost" size="sm" className="h-10 text-primary-foreground hover:bg-white/10 hover:text-primary-foreground gap-2 px-2 sm:px-3">
-                  <User className="h-4 w-4" />
-                  <span className="hidden text-sm sm:inline">Sign in</span>
-                </Button>
-              </Link>
-            )}
-
-            <Link to="/cart">
-              <Button variant="ghost" size="sm" className="h-10 text-primary-foreground hover:bg-white/10 hover:text-primary-foreground gap-2 px-2 sm:px-3 relative">
-                <ShoppingCart className="h-5 w-5" />
-                {totalCount > 0 && (
-                  <span className="absolute -top-0.5 -right-0.5 flex h-5 min-w-5 items-center justify-center rounded-full bg-accent px-1 text-[11px] font-bold text-accent-foreground">
-                    {totalCount}
-                  </span>
-                )}
-                <span className="hidden text-sm md:inline">Cart</span>
-              </Button>
-            </Link>
-
-            <Button
-              variant="ghost"
-              size="icon"
-              className="h-10 text-primary-foreground hover:bg-white/10 hover:text-primary-foreground lg:hidden"
-              onClick={() => setMobileOpen((v) => !v)}
-              aria-label="Menu"
-            >
-              {mobileOpen ? <X className="h-5 w-5" /> : <Menu className="h-5 w-5" />}
-            </Button>
-          </div>
         </div>
-      </div>
-
-      {/* Category bar */}
-      <div className="hidden border-b border-border bg-card lg:block">
-        <div className="mx-auto flex h-11 max-w-7xl items-center gap-1 px-6 overflow-x-auto">
-          <Link
-            to="/"
-            className={cn(
-              "px-3 py-1.5 text-sm font-medium rounded-md transition-colors hover:bg-muted whitespace-nowrap",
-              path === "/" && "text-primary",
-            )}
-          >
-            All
-          </Link>
-          {CATEGORY_LINKS.map((c) => (
-            <Link
-              key={c.slug}
-              to="/category/$slug"
-              params={{ slug: c.slug }}
-              className="px-3 py-1.5 text-sm font-medium rounded-md transition-colors hover:bg-muted whitespace-nowrap"
-              activeProps={{ className: "text-primary bg-muted" }}
-            >
-              {c.label}
-            </Link>
-          ))}
-        </div>
-      </div>
+      )}
 
       {/* Mobile menu */}
       {mobileOpen && (
-        <div className="border-b border-border bg-card lg:hidden">
-          <nav className="mx-auto flex max-w-7xl flex-col px-4 py-2">
-            <Link to="/" onClick={() => setMobileOpen(false)} className="border-b border-border py-3 text-sm font-medium">
-              Home
-            </Link>
+        <div className="border-t border-[oklch(0.18_0_0)] bg-[oklch(0.08_0_0)] lg:hidden animate-in fade-in slide-in-from-top-2 duration-200">
+          <nav className="mx-auto flex max-w-[1400px] flex-col px-5 py-4">
             {CATEGORY_LINKS.map((c) => (
               <Link
                 key={c.slug}
                 to="/category/$slug"
                 params={{ slug: c.slug }}
                 onClick={() => setMobileOpen(false)}
-                className="border-b border-border py-3 text-sm font-medium"
+                className="border-b border-[oklch(0.18_0_0)] py-4 font-editorial text-2xl"
               >
                 {c.label}
               </Link>
