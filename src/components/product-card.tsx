@@ -1,7 +1,8 @@
 import { Link } from "@tanstack/react-router";
-import { Star, Plus } from "lucide-react";
+import { Star, Plus, GripVertical } from "lucide-react";
 import { formatINR, discountPct } from "@/lib/format";
 import { useCartStore } from "@/stores/cart-store";
+import { useDragToCart } from "@/components/drag-to-cart-provider";
 import { toast } from "sonner";
 
 export interface ProductCardData {
@@ -19,6 +20,15 @@ export interface ProductCardData {
 export function ProductCard({ product }: { product: ProductCardData }) {
   const discount = discountPct(product.price, product.compare_at_price);
   const addItem = useCartStore((s) => s.addItem);
+  const { bindHandle } = useDragToCart();
+  const dragHandle = bindHandle({
+    productId: product.id,
+    title: product.title,
+    slug: product.slug,
+    price: product.price,
+    image: product.image_url,
+    stock: product.stock,
+  });
 
   const handleQuickAdd = (e: React.MouseEvent) => {
     e.preventDefault();
@@ -57,6 +67,19 @@ export function ProductCard({ product }: { product: ProductCardData }) {
             −{discount}%
           </span>
         )}
+        {/* Long-press drag handle (hold ~600ms, then drag to Cart / Buy Now) */}
+        <button
+          type="button"
+          {...dragHandle}
+          onClick={(e) => {
+            e.preventDefault();
+            e.stopPropagation();
+          }}
+          className="absolute top-3 right-3 grid h-9 w-9 cursor-grab touch-none place-items-center rounded-full bg-white/90 text-black shadow-md opacity-100 transition-all duration-300 hover:bg-white active:cursor-grabbing md:opacity-0 md:translate-y-1 md:group-hover:opacity-100 md:group-hover:translate-y-0"
+          aria-label={`Hold to drag ${product.title} to cart`}
+        >
+          <GripVertical className="h-4 w-4" />
+        </button>
         {/* Quick-add button */}
         <button
           onClick={handleQuickAdd}
