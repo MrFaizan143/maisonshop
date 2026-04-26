@@ -92,13 +92,13 @@ function ProductPage() {
     toast.success("Added to cart", { description: `${qty} × ${product.title}` });
   };
 
+  const inStock = product.stock > 0;
+
   const handleBuyNow = () => {
     if (!inStock) return;
     handleAdd();
     navigate({ to: "/checkout" });
   };
-
-  const inStock = product.stock > 0;
 
   return (
     <div className="mx-auto max-w-7xl px-3 py-4 sm:px-6 sm:py-6">
