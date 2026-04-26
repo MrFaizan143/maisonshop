@@ -19,8 +19,8 @@ function CheckoutPage() {
   const navigate = useNavigate();
   const { user, loading: authLoading } = useAuth();
   const items = useCartStore((s) => s.items);
-  const subtotal = useCartStore((s) => s.subtotal());
   const clearCart = useCartStore((s) => s.clearCart);
+  const subtotal = items.reduce((sum, i) => sum + i.price * i.quantity, 0);
   const shipping = subtotal === 0 ? 0 : subtotal >= 499 ? 0 : 49;
   const total = subtotal + shipping;
 

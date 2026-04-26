@@ -63,6 +63,7 @@ export const Route = createFileRoute("/product/$slug")({
 function ProductPage() {
   const { product } = Route.useLoaderData();
   const addItem = useCartStore((s) => s.addItem);
+  const navigate = Route.useNavigate();
   const [qty, setQty] = useState(1);
   const allImages: string[] = product.image_url
     ? [product.image_url, ...(product.images ?? [])].filter(
@@ -92,6 +93,12 @@ function ProductPage() {
   };
 
   const inStock = product.stock > 0;
+
+  const handleBuyNow = () => {
+    if (!inStock) return;
+    handleAdd();
+    navigate({ to: "/checkout" });
+  };
 
   return (
     <div className="mx-auto max-w-7xl px-3 py-4 sm:px-6 sm:py-6">
@@ -217,16 +224,15 @@ function ProductPage() {
             >
               <ShoppingCart className="mr-2 h-5 w-5" /> Add to Cart
             </Button>
-            <Link to="/cart" className="flex-1">
-              <Button
-                disabled={!inStock}
-                size="lg"
-                onClick={() => inStock && handleAdd()}
-                className="w-full bg-deal text-white hover:bg-deal/90 font-semibold"
-              >
-                Buy Now
-              </Button>
-            </Link>
+            <Button
+              type="button"
+              onClick={handleBuyNow}
+              disabled={!inStock}
+              size="lg"
+              className="flex-1 bg-deal text-white hover:bg-deal/90 font-semibold"
+            >
+              Buy Now
+            </Button>
           </div>
 
           {/* Trust badges */}

@@ -31,16 +31,29 @@ function SearchPage() {
       return;
     }
     setLoading(true);
+    // Escape PostgREST special chars to prevent malformed `or()` filters
+    const safe = q.replace(/[,()*\\]/g, " ").trim().slice(0, 100);
+    if (!safe) {
+      setResults([]);
+      setLoading(false);
+      return;
+    }
+    const term = `%${safe}%`;
+    let cancelled = false;
     supabase
       .from("products")
       .select("id, title, slug, price, compare_at_price, image_url, rating, rating_count, stock")
       .eq("active", true)
-      .or(`title.ilike.%${q}%,description.ilike.%${q}%,brand.ilike.%${q}%`)
+      .or(`title.ilike.${term},description.ilike.${term},brand.ilike.${term}`)
       .limit(60)
       .then(({ data }) => {
+        if (cancelled) return;
         setResults((data ?? []) as ProductCardData[]);
         setLoading(false);
       });
+    return () => {
+      cancelled = true;
+    };
   }, [q]);
 
   return (
