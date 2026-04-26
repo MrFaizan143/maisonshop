@@ -43,7 +43,7 @@ function HomePage() {
       <section className="grid lg:grid-cols-2 min-h-[88vh] border-b border-border">
         {/* LEFT — FASHION (editorial monochrome) */}
         <SplitPanel
-          to="/category/fashion"
+          slug="fashion"
           theme="fashion"
           eyebrow="Vol. 01 — Fashion"
           title={
@@ -61,7 +61,7 @@ function HomePage() {
 
         {/* RIGHT — FOOD (organic earthy) */}
         <SplitPanel
-          to="/category/grocery"
+          slug="grocery"
           theme="grocery"
           eyebrow="Vol. 02 — Food"
           title={
@@ -98,21 +98,21 @@ function HomePage() {
 
         <div className="grid grid-cols-1 md:grid-cols-3 gap-4 md:gap-6">
           <BentoTile
-            to="/category/electronics"
+            slug="electronics"
             title="Electronics"
             tagline="Sharp. Considered. Connected."
             image={catElectronics}
             accentClass="bg-[oklch(0.65_0.2_250)] text-white"
           />
           <BentoTile
-            to="/category/home"
+            slug="home"
             title="Home"
             tagline="Objects for a slower life."
             image={catHome}
             accentClass="bg-[oklch(0.7_0.1_55)] text-[oklch(0.15_0.02_40)]"
           />
           <BentoTile
-            to="/category/beauty"
+            slug="beauty"
             title="Beauty"
             tagline="Quiet rituals, lasting glow."
             image={catBeauty}
@@ -198,7 +198,7 @@ function HomePage() {
 /* ============ SPLIT PANEL ============ */
 
 function SplitPanel({
-  to,
+  slug,
   theme,
   eyebrow,
   title,
@@ -207,7 +207,7 @@ function SplitPanel({
   image,
   align,
 }: {
-  to: "/category/fashion" | "/category/grocery";
+  slug: "fashion" | "grocery";
   theme: "fashion" | "grocery";
   eyebrow: string;
   title: React.ReactNode;
@@ -218,7 +218,8 @@ function SplitPanel({
 }) {
   return (
     <Link
-      to={to}
+      to="/category/$slug"
+      params={{ slug }}
       data-theme={theme}
       className="group relative overflow-hidden bg-background text-foreground"
     >
@@ -285,13 +286,13 @@ function SplitPanel({
 /* ============ BENTO TILE ============ */
 
 function BentoTile({
-  to,
+  slug,
   title,
   tagline,
   image,
   accentClass,
 }: {
-  to: "/category/electronics" | "/category/home" | "/category/beauty";
+  slug: "electronics" | "home" | "beauty";
   title: string;
   tagline: string;
   image: string;
@@ -299,7 +300,8 @@ function BentoTile({
 }) {
   return (
     <Link
-      to={to}
+      to="/category/$slug"
+      params={{ slug }}
       className="group relative aspect-[4/5] md:aspect-[3/4] overflow-hidden rounded-2xl bg-muted"
     >
       <img

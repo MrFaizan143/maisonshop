@@ -6,7 +6,7 @@ import { useAuth } from "@/contexts/auth-context";
 import { formatINR } from "@/lib/format";
 
 export const Route = createFileRoute("/order/$id")({
-  head: () => ({ meta: [{ title: "Order confirmed — ShopHub" }] }),
+  head: () => ({ meta: [{ title: "Order confirmed — Maison" }] }),
   component: OrderConfirmationPage,
 });
 

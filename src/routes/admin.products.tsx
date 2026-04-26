@@ -8,7 +8,7 @@ import { formatINR } from "@/lib/format";
 import { toast } from "sonner";
 
 export const Route = createFileRoute("/admin/products")({
-  head: () => ({ meta: [{ title: "Admin Products — ShopHub" }] }),
+  head: () => ({ meta: [{ title: "Admin Products — Maison" }] }),
   component: AdminProductsPage,
 });
 

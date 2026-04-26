@@ -6,7 +6,7 @@ import { useAuth } from "@/contexts/auth-context";
 import { formatINR } from "@/lib/format";
 
 export const Route = createFileRoute("/admin")({
-  head: () => ({ meta: [{ title: "Admin — ShopHub" }] }),
+  head: () => ({ meta: [{ title: "Admin — Maison" }] }),
   component: AdminPage,
 });
 
