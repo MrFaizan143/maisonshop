@@ -63,6 +63,7 @@ export const Route = createFileRoute("/product/$slug")({
 function ProductPage() {
   const { product } = Route.useLoaderData();
   const addItem = useCartStore((s) => s.addItem);
+  const navigate = Route.useNavigate();
   const [qty, setQty] = useState(1);
   const allImages: string[] = product.image_url
     ? [product.image_url, ...(product.images ?? [])].filter(
@@ -89,6 +90,12 @@ function ProductPage() {
       qty,
     );
     toast.success("Added to cart", { description: `${qty} × ${product.title}` });
+  };
+
+  const handleBuyNow = () => {
+    if (!inStock) return;
+    handleAdd();
+    navigate({ to: "/checkout" });
   };
 
   const inStock = product.stock > 0;
@@ -217,16 +224,15 @@ function ProductPage() {
             >
               <ShoppingCart className="mr-2 h-5 w-5" /> Add to Cart
             </Button>
-            <Link to="/cart" className="flex-1">
-              <Button
-                disabled={!inStock}
-                size="lg"
-                onClick={() => inStock && handleAdd()}
-                className="w-full bg-deal text-white hover:bg-deal/90 font-semibold"
-              >
-                Buy Now
-              </Button>
-            </Link>
+            <Button
+              type="button"
+              onClick={handleBuyNow}
+              disabled={!inStock}
+              size="lg"
+              className="flex-1 bg-deal text-white hover:bg-deal/90 font-semibold"
+            >
+              Buy Now
+            </Button>
           </div>
 
           {/* Trust badges */}

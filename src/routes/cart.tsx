@@ -14,7 +14,7 @@ function CartPage() {
   const items = useCartStore((s) => s.items);
   const updateQty = useCartStore((s) => s.updateQty);
   const removeItem = useCartStore((s) => s.removeItem);
-  const subtotal = useCartStore((s) => s.subtotal());
+  const subtotal = items.reduce((sum, i) => sum + i.price * i.quantity, 0);
   const shipping = subtotal === 0 ? 0 : subtotal >= 499 ? 0 : 49;
   const total = subtotal + shipping;
 

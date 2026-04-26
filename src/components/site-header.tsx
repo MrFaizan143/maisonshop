@@ -23,7 +23,8 @@ const CATEGORY_LINKS = [
 
 export function SiteHeader() {
   const navigate = useNavigate();
-  const totalCount = useCartStore((s) => s.totalCount());
+  const items = useCartStore((s) => s.items);
+  const totalCount = items.reduce((sum, i) => sum + i.quantity, 0);
   const { user, isAdmin, signOut } = useAuth();
   const [q, setQ] = useState("");
   const [mobileOpen, setMobileOpen] = useState(false);
@@ -32,10 +33,12 @@ export function SiteHeader() {
 
   const onSearch = (e: FormEvent) => {
     e.preventDefault();
-    if (q.trim()) {
-      navigate({ to: "/search", search: { q: q.trim() } });
+    const trimmed = q.trim().slice(0, 100);
+    if (trimmed) {
+      navigate({ to: "/search", search: { q: trimmed } });
       setMobileOpen(false);
       setSearchOpen(false);
+      setQ("");
     }
   };
 
