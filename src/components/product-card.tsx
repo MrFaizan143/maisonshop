@@ -1,7 +1,8 @@
 import { Link } from "@tanstack/react-router";
-import { Star, Plus } from "lucide-react";
+import { Star, Plus, GripVertical } from "lucide-react";
 import { formatINR, discountPct } from "@/lib/format";
 import { useCartStore } from "@/stores/cart-store";
+import { useDragToCart } from "@/components/drag-to-cart-provider";
 import { toast } from "sonner";
 
 export interface ProductCardData {
@@ -19,6 +20,15 @@ export interface ProductCardData {
 export function ProductCard({ product }: { product: ProductCardData }) {
   const discount = discountPct(product.price, product.compare_at_price);
   const addItem = useCartStore((s) => s.addItem);
+  const { bindHandle } = useDragToCart();
+  const dragHandle = bindHandle({
+    productId: product.id,
+    title: product.title,
+    slug: product.slug,
+    price: product.price,
+    image: product.image_url,
+    stock: product.stock,
+  });
 
   const handleQuickAdd = (e: React.MouseEvent) => {
     e.preventDefault();

@@ -5,6 +5,7 @@ import { AnnouncementBar } from "@/components/announcement-bar";
 import { Toaster } from "@/components/ui/sonner";
 import { AuthProvider } from "@/contexts/auth-context";
 import { ThemeProvider } from "@/contexts/theme-context";
+import { DragToCartProvider } from "@/components/drag-to-cart-provider";
 
 import appCss from "../styles.css?url";
 
@@ -78,15 +79,17 @@ function RootComponent() {
   return (
     <AuthProvider>
       <ThemeProvider>
-        <div className="flex min-h-screen flex-col">
-          <AnnouncementBar />
-          <SiteHeader />
-          <main className="flex-1">
-            <Outlet />
-          </main>
-          <SiteFooter />
-          <Toaster position="top-center" richColors />
-        </div>
+        <DragToCartProvider>
+          <div className="flex min-h-screen flex-col">
+            <AnnouncementBar />
+            <SiteHeader />
+            <main className="flex-1">
+              <Outlet />
+            </main>
+            <SiteFooter />
+            <Toaster position="top-center" richColors />
+          </div>
+        </DragToCartProvider>
       </ThemeProvider>
     </AuthProvider>
   );
