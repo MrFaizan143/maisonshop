@@ -35,11 +35,14 @@ export const Route = createFileRoute("/product/$slug")({
           {
             name: "description",
             content:
-              loaderData.product.description.slice(0, 160) ||
+              (loaderData.product.description ?? "").slice(0, 160) ||
               `Buy ${loaderData.product.title} on Maison.`,
           },
           { property: "og:title", content: loaderData.product.title },
-          { property: "og:description", content: loaderData.product.description.slice(0, 160) },
+          {
+            property: "og:description",
+            content: (loaderData.product.description ?? "").slice(0, 160),
+          },
           ...(loaderData.product.image_url
             ? [{ property: "og:image", content: loaderData.product.image_url }]
             : []),

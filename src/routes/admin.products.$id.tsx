@@ -5,7 +5,7 @@ import { useAuth } from "@/contexts/auth-context";
 import { AdminProductForm } from "@/components/admin-product-form";
 
 export const Route = createFileRoute("/admin/products/$id")({
-  head: () => ({ meta: [{ title: "Edit Product — ShopHub Admin" }] }),
+  head: () => ({ meta: [{ title: "Edit Product — Maison Admin" }] }),
   component: EditProductPage,
 });
 
