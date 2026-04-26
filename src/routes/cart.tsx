@@ -84,7 +84,7 @@ function CartPage() {
                     <div className="flex items-center border border-border">
                       <button
                         onClick={() => updateQty(item.productId, item.quantity - 1)}
-                        className="px-3 py-1.5 hover:bg-muted transition-colors"
+                        className="grid h-11 w-11 place-items-center hover:bg-muted transition-colors"
                         aria-label="Decrease quantity"
                       >
                         <Minus className="h-3.5 w-3.5" />
@@ -93,7 +93,7 @@ function CartPage() {
                       <button
                         onClick={() => updateQty(item.productId, item.quantity + 1)}
                         disabled={item.quantity >= item.stock}
-                        className="px-3 py-1.5 hover:bg-muted transition-colors disabled:opacity-40"
+                        className="grid h-11 w-11 place-items-center hover:bg-muted transition-colors disabled:opacity-40"
                         aria-label="Increase quantity"
                       >
                         <Plus className="h-3.5 w-3.5" />
@@ -101,7 +101,7 @@ function CartPage() {
                     </div>
                     <button
                       onClick={() => removeItem(item.productId)}
-                      className="flex items-center gap-1.5 font-mono text-[10px] uppercase tracking-[0.18em] text-muted-foreground hover:text-destructive transition-colors"
+                      className="flex items-center gap-1.5 px-2 py-2 font-mono text-[10px] uppercase tracking-[0.18em] text-muted-foreground hover:text-destructive transition-colors"
                     >
                       <Trash2 className="h-3.5 w-3.5" /> Remove
                     </button>

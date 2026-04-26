@@ -155,7 +155,10 @@ export function SiteHeader() {
           </Link>
 
           <button
-            onClick={() => setMobileOpen((v) => !v)}
+            onClick={() => {
+              setMobileOpen((v) => !v);
+              setSearchOpen(false);
+            }}
             className="grid h-10 w-10 place-items-center rounded-full hover:bg-white/10 transition lg:hidden"
             aria-label="Menu"
           >
