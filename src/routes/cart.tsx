@@ -43,7 +43,9 @@ function CartPage() {
       .limit(6)
       .then(({ data }) => {
         if (cancelled) return;
-        const filtered = ((data ?? []) as ProductCardData[]).filter((p) => !inCartIds.includes(p.id));
+        const filtered = ((data ?? []) as ProductCardData[]).filter(
+          (p) => !inCartIds.includes(p.id),
+        );
         setUpsell(filtered.slice(0, 4));
       });
     return () => {

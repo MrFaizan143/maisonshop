@@ -22,7 +22,14 @@ interface AdminOrder {
   placed_at: string;
 }
 
-const STATUS_FILTERS = ["all", "pending", "confirmed", "shipped", "delivered", "cancelled"] as const;
+const STATUS_FILTERS = [
+  "all",
+  "pending",
+  "confirmed",
+  "shipped",
+  "delivered",
+  "cancelled",
+] as const;
 
 function AdminPage() {
   const navigate = useNavigate();
@@ -69,10 +76,7 @@ function AdminPage() {
   };
 
   const revenue = useMemo(
-    () =>
-      orders
-        .filter((o) => o.status !== "cancelled")
-        .reduce((s, o) => s + Number(o.total), 0),
+    () => orders.filter((o) => o.status !== "cancelled").reduce((s, o) => s + Number(o.total), 0),
     [orders],
   );
 
@@ -115,11 +119,7 @@ function AdminPage() {
 
       <div className="mb-6 grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
         <StatCard icon={ShoppingBag} label="Recent orders" value={orders.length.toString()} />
-        <StatCard
-          icon={IndianRupee}
-          label="Revenue (last 100)"
-          value={formatINR(revenue)}
-        />
+        <StatCard icon={IndianRupee} label="Revenue (last 100)" value={formatINR(revenue)} />
         <StatCard icon={Package} label="Products" value={counts.products.toString()} />
         <StatCard icon={LayoutGrid} label="Categories" value={counts.categories.toString()} />
       </div>
@@ -138,9 +138,7 @@ function AdminPage() {
           </div>
           <select
             value={statusFilter}
-            onChange={(e) =>
-              setStatusFilter(e.target.value as (typeof STATUS_FILTERS)[number])
-            }
+            onChange={(e) => setStatusFilter(e.target.value as (typeof STATUS_FILTERS)[number])}
             className="h-9 rounded-md border border-border bg-background px-2 text-sm"
           >
             {STATUS_FILTERS.map((s) => (
@@ -174,11 +172,7 @@ function AdminPage() {
               filtered.map((o) => (
                 <tr key={o.id} className="border-t border-border hover:bg-muted/30">
                   <td className="p-3 font-mono text-xs">
-                    <Link
-                      to="/order/$id"
-                      params={{ id: o.id }}
-                      className="hover:underline"
-                    >
+                    <Link to="/order/$id" params={{ id: o.id }} className="hover:underline">
                       {o.order_number}
                     </Link>
                   </td>

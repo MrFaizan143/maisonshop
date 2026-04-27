@@ -69,7 +69,10 @@ function SearchPage() {
       return;
     }
     setLoading(true);
-    const safe = q.replace(/[,()*\\]/g, " ").trim().slice(0, 100);
+    const safe = q
+      .replace(/[,()*\\]/g, " ")
+      .trim()
+      .slice(0, 100);
     if (!safe) {
       setResults([]);
       setLoading(false);
@@ -86,7 +89,8 @@ function SearchPage() {
     if (in_stock) req = req.gt("stock", 0);
     if (activeSort === "price_asc") req = req.order("price", { ascending: true });
     else if (activeSort === "price_desc") req = req.order("price", { ascending: false });
-    else if (activeSort === "rating") req = req.order("rating", { ascending: false, nullsFirst: false });
+    else if (activeSort === "rating")
+      req = req.order("rating", { ascending: false, nullsFirst: false });
     else if (activeSort === "newest") req = req.order("created_at", { ascending: false });
     req.then(({ data }) => {
       if (cancelled) return;
@@ -149,7 +153,9 @@ function SearchPage() {
               {recentSearches.map((item) => (
                 <button
                   key={item}
-                  onClick={() => navigate({ to: "/search", search: (prev) => ({ ...prev, q: item }) })}
+                  onClick={() =>
+                    navigate({ to: "/search", search: (prev) => ({ ...prev, q: item }) })
+                  }
                   className="rounded-full border border-border px-3 py-1 text-xs hover:bg-muted"
                 >
                   {item}
@@ -201,7 +207,9 @@ function SearchPage() {
               {["fashion", "grocery", "electronics", "home", "beauty"].map((slug) => (
                 <button
                   key={slug}
-                  onClick={() => navigate({ to: "/search", search: (prev) => ({ ...prev, q: slug }) })}
+                  onClick={() =>
+                    navigate({ to: "/search", search: (prev) => ({ ...prev, q: slug }) })
+                  }
                   className="rounded-full border border-border px-3 py-1 text-xs hover:bg-muted"
                 >
                   Try “{slug}”

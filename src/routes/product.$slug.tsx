@@ -237,7 +237,9 @@ function ProductPage() {
             ) : (
               <span className="text-sm font-semibold text-deal">● Out of Stock</span>
             )}
-            {lowStock && <span className="text-xs font-semibold text-deal">Only {product.stock} left</span>}
+            {lowStock && (
+              <span className="text-xs font-semibold text-deal">Only {product.stock} left</span>
+            )}
           </div>
 
           {inStock && (
@@ -301,8 +303,8 @@ function ProductPage() {
 
           <div className="mt-5 rounded-lg border border-border bg-muted/40 p-3 text-sm">
             <p>
-              Delivery by <span className="font-semibold">{estimatedDelivery}</span> · 7-day returns · COD
-              available
+              Delivery by <span className="font-semibold">{estimatedDelivery}</span> · 7-day returns
+              · COD available
             </p>
           </div>
 
@@ -317,7 +319,11 @@ function ProductPage() {
         </div>
       </div>
 
-      <RelatedProducts productId={product.id} categoryId={product.category_id} brand={product.brand} />
+      <RelatedProducts
+        productId={product.id}
+        categoryId={product.category_id}
+        brand={product.brand}
+      />
       <script
         type="application/ld+json"
         dangerouslySetInnerHTML={{
@@ -333,7 +339,9 @@ function ProductPage() {
               "@type": "Offer",
               priceCurrency: "INR",
               price: Number(product.price),
-              availability: inStock ? "https://schema.org/InStock" : "https://schema.org/OutOfStock",
+              availability: inStock
+                ? "https://schema.org/InStock"
+                : "https://schema.org/OutOfStock",
             },
             aggregateRating:
               product.rating != null && product.rating > 0

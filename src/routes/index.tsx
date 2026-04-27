@@ -263,7 +263,10 @@ function HomePage() {
             </p>
           </div>
           <div className="px-8 py-14 flex items-center">
-            <form onSubmit={handleNewsletter} className="w-full max-w-md flex flex-col sm:flex-row gap-3">
+            <form
+              onSubmit={handleNewsletter}
+              className="w-full max-w-md flex flex-col sm:flex-row gap-3"
+            >
               <input
                 type="email"
                 placeholder="your@email.com"
@@ -274,11 +277,11 @@ function HomePage() {
               <button
                 type="submit"
                 className="shrink-0 font-mono text-[11px] uppercase tracking-[0.22em] bg-foreground text-background px-5 py-2.5 hover:bg-foreground/90 transition-colors"
-                >
-                  {newsletterDone ? "Subscribed" : "Subscribe"}
-                </button>
-              </form>
-            </div>
+              >
+                {newsletterDone ? "Subscribed" : "Subscribe"}
+              </button>
+            </form>
+          </div>
         </div>
       </section>
 

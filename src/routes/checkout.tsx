@@ -122,8 +122,7 @@ function CheckoutPage() {
 
   const validate = (): string | null => {
     if (form.full_name.trim().length < 2) return "Please enter your full name";
-    if (!PHONE_RE.test(form.phone.trim()))
-      return "Enter a valid 10-digit Indian mobile number";
+    if (!PHONE_RE.test(form.phone.trim())) return "Enter a valid 10-digit Indian mobile number";
     if (form.line1.trim().length < 5) return "Address line 1 looks too short";
     if (form.city.trim().length < 2) return "Please enter your city";
     if (form.state.trim().length < 2) return "Please enter your state";
@@ -216,10 +215,7 @@ function CheckoutPage() {
   return (
     <div className="mx-auto max-w-7xl px-3 py-4 pb-28 sm:px-6 sm:py-6 lg:pb-6">
       <h1 className="mb-4 text-2xl font-semibold">Checkout</h1>
-      <form
-        onSubmit={handlePlace}
-        className="grid gap-6 lg:grid-cols-[1fr_360px]"
-      >
+      <form onSubmit={handlePlace} className="grid gap-6 lg:grid-cols-[1fr_360px]">
         <div className="space-y-5 rounded-xl border border-border bg-card p-5 shadow-card">
           {saved.length > 0 && (
             <div>

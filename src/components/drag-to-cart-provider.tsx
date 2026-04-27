@@ -238,7 +238,15 @@ function DragOverlay({
             }}
           >
             <svg width="56" height="56" viewBox="0 0 56 56" className="block">
-              <circle cx="28" cy="28" r="24" fill="none" stroke="currentColor" strokeOpacity="0.15" strokeWidth="3" />
+              <circle
+                cx="28"
+                cy="28"
+                r="24"
+                fill="none"
+                stroke="currentColor"
+                strokeOpacity="0.15"
+                strokeWidth="3"
+              />
               <motion.circle
                 cx="28"
                 cy="28"
