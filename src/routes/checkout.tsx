@@ -174,6 +174,7 @@ function CheckoutPage() {
       })),
     );
     if (itemsErr) {
+      await supabase.from("orders").delete().eq("id", order.id);
       toast.error("Order items failed", { description: itemsErr.message });
       setPlacing(false);
       return;

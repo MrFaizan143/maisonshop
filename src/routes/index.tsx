@@ -7,6 +7,7 @@ import { ProductCard, type ProductCardData } from "@/components/product-card";
 import { getRecentlyViewed } from "@/lib/recently-viewed";
 import { trackEvent } from "@/lib/analytics";
 import { isValidEmail } from "@/lib/validation";
+import { toast } from "sonner";
 import catFashion from "@/assets/cat-fashion.jpg";
 import catGrocery from "@/assets/cat-grocery.jpg";
 import catElectronics from "@/assets/cat-electronics.jpg";
@@ -74,7 +75,10 @@ function HomePage() {
   const handleNewsletter = (e: React.FormEvent) => {
     e.preventDefault();
     const email = newsletterEmail.trim().toLowerCase();
-    if (!email || !isValidEmail(email)) return;
+    if (!email || !isValidEmail(email)) {
+      toast.error("Enter a valid email address");
+      return;
+    }
     try {
       const key = "maison-newsletter-signups";
       const prev = JSON.parse(localStorage.getItem(key) ?? "[]") as string[];
@@ -272,6 +276,7 @@ function HomePage() {
                 placeholder="your@email.com"
                 value={newsletterEmail}
                 onChange={(e) => setNewsletterEmail(e.target.value)}
+                aria-label="Email address"
                 className="flex-1 border-b border-border bg-transparent pb-2 text-sm placeholder:text-muted-foreground/50 outline-none focus:border-foreground transition-colors"
               />
               <button

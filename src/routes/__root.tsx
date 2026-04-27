@@ -6,6 +6,7 @@ import { Toaster } from "@/components/ui/sonner";
 import { AuthProvider } from "@/contexts/auth-context";
 import { ThemeProvider } from "@/contexts/theme-context";
 import { DragToCartProvider } from "@/components/drag-to-cart-provider";
+import { serializeJsonLd } from "@/lib/safe-json-ld";
 
 import appCss from "../styles.css?url";
 
@@ -43,8 +44,22 @@ export const Route = createRootRoute({
           "Editorial fashion. Lush food. Sharp electronics. One destination — Maison. Cash on Delivery across India.",
       },
       { name: "author", content: "Maison" },
+      { name: "robots", content: "index, follow" },
+      { property: "og:title", content: "Maison — A Modern Department Store" },
+      {
+        property: "og:description",
+        content:
+          "Editorial fashion. Lush food. Sharp electronics. One destination — Maison. Cash on Delivery across India.",
+      },
       { property: "og:type", content: "website" },
+      { property: "og:site_name", content: "Maison" },
       { name: "twitter:card", content: "summary_large_image" },
+      { name: "twitter:title", content: "Maison — A Modern Department Store" },
+      {
+        name: "twitter:description",
+        content:
+          "Editorial fashion. Lush food. Sharp electronics. One destination — Maison. Cash on Delivery across India.",
+      },
     ],
     links: [
       { rel: "stylesheet", href: appCss },
@@ -96,7 +111,7 @@ function RootComponent() {
             <Toaster position="top-center" richColors />
             <script
               type="application/ld+json"
-              dangerouslySetInnerHTML={{ __html: JSON.stringify(orgSchema) }}
+              dangerouslySetInnerHTML={{ __html: serializeJsonLd(orgSchema) }}
             />
           </div>
         </DragToCartProvider>

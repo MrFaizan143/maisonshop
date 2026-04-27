@@ -20,6 +20,7 @@ import { RelatedProducts } from "@/components/related-products";
 import { trackEvent } from "@/lib/analytics";
 import { pushRecentlyViewed } from "@/lib/recently-viewed";
 import { DELIVERY_ESTIMATE_DAYS } from "@/lib/constants";
+import { serializeJsonLd } from "@/lib/safe-json-ld";
 
 export const Route = createFileRoute("/product/$slug")({
   loader: async ({ params }) => {
@@ -327,7 +328,7 @@ function ProductPage() {
       <script
         type="application/ld+json"
         dangerouslySetInnerHTML={{
-          __html: JSON.stringify({
+          __html: serializeJsonLd({
             "@context": "https://schema.org",
             "@type": "Product",
             name: product.title,
