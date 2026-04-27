@@ -1,12 +1,22 @@
-import { createFileRoute } from "@tanstack/react-router";
-import { useEffect, useState } from "react";
+import { createFileRoute, useNavigate } from "@tanstack/react-router";
+import { useEffect, useMemo, useState } from "react";
 import { motion } from "framer-motion";
 import { z } from "zod";
 import { supabase } from "@/integrations/supabase/client";
 import { ProductCard, type ProductCardData } from "@/components/product-card";
 
+const SORTS = ["relevance", "price_asc", "price_desc", "rating", "newest"] as const;
+type Sort = (typeof SORTS)[number];
+
 const searchSchema = z.object({
   q: z.string().optional(),
+  sort: z.enum(SORTS).optional(),
+  in_stock: z
+    .union([z.boolean(), z.string()])
+    .optional()
+    .transform((v): boolean | undefined =>
+      v === undefined ? undefined : v === true || v === "true" || v === "1",
+    ),
 });
 
 export const Route = createFileRoute("/search")({
@@ -20,10 +30,27 @@ export const Route = createFileRoute("/search")({
   component: SearchPage,
 });
 
+const SORT_LABEL: Record<Sort, string> = {
+  relevance: "Relevance",
+  price_asc: "Price: low to high",
+  price_desc: "Price: high to low",
+  rating: "Top rated",
+  newest: "Newest",
+};
+
 function SearchPage() {
-  const { q } = Route.useSearch();
+  const { q, sort, in_stock } = Route.useSearch();
+  const navigate = useNavigate();
+  const activeSort: Sort = sort ?? "relevance";
   const [results, setResults] = useState<ProductCardData[]>([]);
   const [loading, setLoading] = useState(false);
+
+  const updateSearch = (patch: { sort?: Sort; in_stock?: boolean }) => {
+    navigate({
+      to: "/search",
+      search: (prev) => ({ ...prev, ...patch }),
+    });
+  };
 
   useEffect(() => {
     if (!q) {
@@ -31,7 +58,6 @@ function SearchPage() {
       return;
     }
     setLoading(true);
-    // Escape PostgREST special chars to prevent malformed `or()` filters
     const safe = q.replace(/[,()*\\]/g, " ").trim().slice(0, 100);
     if (!safe) {
       setResults([]);
@@ -40,25 +66,31 @@ function SearchPage() {
     }
     const term = `%${safe}%`;
     let cancelled = false;
-    supabase
+    let req = supabase
       .from("products")
       .select("id, title, slug, price, compare_at_price, image_url, rating, rating_count, stock")
       .eq("active", true)
       .or(`title.ilike.${term},description.ilike.${term},brand.ilike.${term}`)
-      .limit(60)
-      .then(({ data }) => {
-        if (cancelled) return;
-        setResults((data ?? []) as ProductCardData[]);
-        setLoading(false);
-      });
+      .limit(60);
+    if (in_stock) req = req.gt("stock", 0);
+    if (activeSort === "price_asc") req = req.order("price", { ascending: true });
+    else if (activeSort === "price_desc") req = req.order("price", { ascending: false });
+    else if (activeSort === "rating") req = req.order("rating", { ascending: false, nullsFirst: false });
+    else if (activeSort === "newest") req = req.order("created_at", { ascending: false });
+    req.then(({ data }) => {
+      if (cancelled) return;
+      setResults((data ?? []) as ProductCardData[]);
+      setLoading(false);
+    });
     return () => {
       cancelled = true;
     };
-  }, [q]);
+  }, [q, activeSort, in_stock]);
+
+  const hasResults = useMemo(() => results.length > 0, [results]);
 
   return (
     <div className="bg-background text-foreground">
-      {/* Header */}
       <section className="border-b border-border">
         <div className="mx-auto max-w-[1400px] px-5 sm:px-8 py-16 sm:py-20">
           <p className="font-mono text-[11px] uppercase tracking-[0.25em] text-muted-foreground">
@@ -90,9 +122,38 @@ function SearchPage() {
         </div>
       </section>
 
-      {/* Results */}
+      {q && (
+        <section className="border-b border-border">
+          <div className="mx-auto flex max-w-[1400px] flex-wrap items-center gap-3 px-5 py-4 sm:px-8">
+            <label className="font-mono text-[11px] uppercase tracking-[0.22em] text-muted-foreground">
+              Sort
+            </label>
+            <select
+              value={activeSort}
+              onChange={(e) => updateSearch({ sort: e.target.value as Sort })}
+              className="rounded-md border border-border bg-background px-3 py-1.5 text-sm"
+            >
+              {SORTS.map((s) => (
+                <option key={s} value={s}>
+                  {SORT_LABEL[s]}
+                </option>
+              ))}
+            </select>
+            <label className="ml-2 inline-flex items-center gap-2 text-sm">
+              <input
+                type="checkbox"
+                checked={!!in_stock}
+                onChange={(e) => updateSearch({ in_stock: e.target.checked })}
+                className="h-4 w-4 accent-foreground"
+              />
+              In stock only
+            </label>
+          </div>
+        </section>
+      )}
+
       <section className="mx-auto max-w-[1400px] px-5 sm:px-8 py-12 sm:py-16">
-        {!loading && results.length === 0 && q ? (
+        {!loading && !hasResults && q ? (
           <div className="py-24 text-center">
             <p className="font-display text-3xl text-muted-foreground/50">Nothing found.</p>
             <p className="mt-3 font-mono text-[11px] uppercase tracking-[0.22em] text-muted-foreground">
