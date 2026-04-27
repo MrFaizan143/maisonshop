@@ -14,7 +14,9 @@ const searchSchema = z.object({
   in_stock: z
     .union([z.boolean(), z.string()])
     .optional()
-    .transform((v) => v === true || v === "true" || v === "1"),
+    .transform((v): boolean | undefined =>
+      v === undefined ? undefined : v === true || v === "true" || v === "1",
+    ),
 });
 
 export const Route = createFileRoute("/search")({
