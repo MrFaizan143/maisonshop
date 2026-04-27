@@ -1,7 +1,8 @@
 import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
-import { useEffect, useState } from "react";
-import { Loader2, Plus, Pencil, Eye, EyeOff } from "lucide-react";
+import { useEffect, useMemo, useState } from "react";
+import { Loader2, Plus, Pencil, Eye, EyeOff, Search } from "lucide-react";
 import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/contexts/auth-context";
 import { formatINR } from "@/lib/format";
@@ -29,6 +30,8 @@ function AdminProductsPage() {
   const { user, isAdmin, loading: authLoading } = useAuth();
   const [rows, setRows] = useState<Row[]>([]);
   const [loading, setLoading] = useState(true);
+  const [search, setSearch] = useState("");
+  const [statusFilter, setStatusFilter] = useState<"all" | "active" | "disabled">("all");
 
   const load = async () => {
     const { data } = await supabase
