@@ -16,6 +16,7 @@ import { useCartStore } from "@/stores/cart-store";
 import { formatINR, discountPct } from "@/lib/format";
 import { toast } from "sonner";
 import { cn } from "@/lib/utils";
+import { RelatedProducts } from "@/components/related-products";
 
 export const Route = createFileRoute("/product/$slug")({
   loader: async ({ params }) => {
@@ -263,6 +264,8 @@ function ProductPage() {
           )}
         </div>
       </div>
+
+      <RelatedProducts productId={product.id} categoryId={product.category_id} />
     </div>
   );
 }
