@@ -76,6 +76,12 @@ function RootShell({ children }: { children: React.ReactNode }) {
 }
 
 function RootComponent() {
+  const orgSchema = {
+    "@context": "https://schema.org",
+    "@type": "Organization",
+    name: "Maison",
+    description: "Modern department store with fashion, food, electronics, home, and beauty.",
+  };
   return (
     <AuthProvider>
       <ThemeProvider>
@@ -88,6 +94,10 @@ function RootComponent() {
             </main>
             <SiteFooter />
             <Toaster position="top-center" richColors />
+            <script
+              type="application/ld+json"
+              dangerouslySetInnerHTML={{ __html: JSON.stringify(orgSchema) }}
+            />
           </div>
         </DragToCartProvider>
       </ThemeProvider>

@@ -84,7 +84,9 @@ function CategoryPage() {
   };
   const [products, setProducts] = useState<ProductCardData[]>([]);
   const [loading, setLoading] = useState(true);
-  const [sort, setSort] = useState<"new" | "price_asc" | "price_desc">("new");
+  const [sort, setSort] = useState<"new" | "price_asc" | "price_desc" | "rating">("new");
+  const [inStockOnly, setInStockOnly] = useState(false);
+  const [priceBand, setPriceBand] = useState<"all" | "lt499" | "499to1499" | "gte1500">("all");
 
   useEffect(() => {
     setLoading(true);
@@ -93,15 +95,20 @@ function CategoryPage() {
       .select("id, title, slug, price, compare_at_price, image_url, rating, rating_count, stock")
       .eq("active", true)
       .eq("category_id", category.id);
+    if (inStockOnly) q = q.gt("stock", 0);
+    if (priceBand === "lt499") q = q.lt("price", 499);
+    else if (priceBand === "499to1499") q = q.gte("price", 499).lte("price", 1499);
+    else if (priceBand === "gte1500") q = q.gte("price", 1500);
     if (sort === "price_asc") q = q.order("price", { ascending: true });
     else if (sort === "price_desc") q = q.order("price", { ascending: false });
+    else if (sort === "rating") q = q.order("rating", { ascending: false, nullsFirst: false });
     else q = q.order("created_at", { ascending: false });
 
     q.then(({ data }) => {
       setProducts((data ?? []) as ProductCardData[]);
       setLoading(false);
     });
-  }, [category.id, sort]);
+  }, [category.id, sort, inStockOnly, priceBand]);
 
   const isFashion = slug === "fashion";
   const isFood = slug === "grocery";
@@ -124,7 +131,7 @@ function CategoryPage() {
             <div className="absolute inset-0">
               <img
                 src={category.image_url}
-                alt=""
+                alt={`${category.name} collection`}
                 className="h-full w-full object-cover opacity-25"
               />
               <div className="absolute inset-0 bg-gradient-to-b from-background/60 via-background/80 to-background" />
@@ -183,7 +190,30 @@ function CategoryPage() {
                 <option value="new">Newest</option>
                 <option value="price_asc">Price ↑</option>
                 <option value="price_desc">Price ↓</option>
+                <option value="rating">Top rated</option>
               </select>
+              <select
+                value={priceBand}
+                onChange={(e) => setPriceBand(e.target.value as typeof priceBand)}
+                className={cn(
+                  "border border-border bg-card px-3 py-1.5 text-sm focus:outline-none focus:ring-2 focus:ring-ring",
+                  isFood ? "rounded-full" : isFashion ? "rounded-none" : "rounded-md",
+                )}
+              >
+                <option value="all">All prices</option>
+                <option value="lt499">Under ₹499</option>
+                <option value="499to1499">₹499–₹1499</option>
+                <option value="gte1500">₹1500+</option>
+              </select>
+              <label className="inline-flex items-center gap-2 text-xs sm:text-sm">
+                <input
+                  type="checkbox"
+                  checked={inStockOnly}
+                  onChange={(e) => setInStockOnly(e.target.checked)}
+                  className="h-4 w-4 accent-foreground"
+                />
+                In stock
+              </label>
             </div>
           </div>
         </div>

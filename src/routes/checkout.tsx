@@ -11,6 +11,7 @@ import { useCartStore } from "@/stores/cart-store";
 import { formatINR } from "@/lib/format";
 import { toast } from "sonner";
 import { cn } from "@/lib/utils";
+import { trackEvent } from "@/lib/analytics";
 
 export const Route = createFileRoute("/checkout")({
   head: () => ({ meta: [{ title: "Checkout — Maison" }] }),
@@ -192,6 +193,13 @@ function CheckoutPage() {
       });
     }
     clearCart();
+    trackEvent("purchase", {
+      orderId: order.id,
+      orderNumber: order.order_number,
+      total,
+      itemCount: items.length,
+      paymentMethod: "cod",
+    });
     toast.success(`Order ${order.order_number} placed!`);
     navigate({ to: "/order/$id", params: { id: order.id } });
   };

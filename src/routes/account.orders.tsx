@@ -5,6 +5,8 @@ import { Button } from "@/components/ui/button";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/contexts/auth-context";
 import { formatINR } from "@/lib/format";
+import { useCartStore } from "@/stores/cart-store";
+import { toast } from "sonner";
 
 export const Route = createFileRoute("/account/orders")({
   head: () => ({ meta: [{ title: "My Orders — Maison" }] }),
@@ -17,7 +19,13 @@ interface OrderRow {
   status: string;
   total: number;
   placed_at: string;
-  order_items: { product_title: string; quantity: number; product_image: string | null }[];
+  order_items: {
+    product_id: string | null;
+    product_title: string;
+    quantity: number;
+    product_image: string | null;
+    unit_price: number;
+  }[];
 }
 
 function OrdersPage() {
@@ -25,6 +33,7 @@ function OrdersPage() {
   const { user, loading: authLoading } = useAuth();
   const [orders, setOrders] = useState<OrderRow[]>([]);
   const [loading, setLoading] = useState(true);
+  const addItem = useCartStore((s) => s.addItem);
 
   useEffect(() => {
     if (!authLoading && !user) {
@@ -35,7 +44,7 @@ function OrdersPage() {
     supabase
       .from("orders")
       .select(
-        "id, order_number, status, total, placed_at, order_items(product_title, quantity, product_image)",
+        "id, order_number, status, total, placed_at, order_items(product_id, product_title, quantity, product_image, unit_price)",
       )
       .eq("user_id", user.id)
       .order("placed_at", { ascending: false })
@@ -51,6 +60,44 @@ function OrdersPage() {
         <Loader2 className="mx-auto h-6 w-6 animate-spin" />
       </div>
     );
+
+  const reorder = async (order: OrderRow) => {
+    const ids = order.order_items.map((i) => i.product_id).filter((v): v is string => !!v);
+    if (ids.length === 0) {
+      toast.error("No reusable items found for this order");
+      return;
+    }
+    const { data } = await supabase
+      .from("products")
+      .select("id, slug, stock")
+      .in("id", ids)
+      .eq("active", true);
+    const stockMap = new Map((data ?? []).map((p) => [p.id, { slug: p.slug, stock: p.stock }]));
+    let added = 0;
+    for (const it of order.order_items) {
+      if (!it.product_id) continue;
+      const product = stockMap.get(it.product_id);
+      if (!product || product.stock <= 0) continue;
+      addItem(
+        {
+          productId: it.product_id,
+          title: it.product_title,
+          slug: product.slug,
+          price: it.unit_price,
+          image: it.product_image,
+          stock: product.stock,
+        },
+        Math.min(it.quantity, product.stock),
+      );
+      added += 1;
+    }
+    if (added === 0) {
+      toast.error("These items are currently unavailable");
+      return;
+    }
+    toast.success(`Added ${added} item${added === 1 ? "" : "s"} to your cart`);
+    navigate({ to: "/cart" });
+  };
 
   return (
     <div className="mx-auto max-w-4xl px-4 py-6">
@@ -79,6 +126,9 @@ function OrdersPage() {
                     {o.status}
                   </span>
                   <span className="font-bold">{formatINR(o.total)}</span>
+                  <Button size="sm" variant="outline" onClick={() => reorder(o)}>
+                    Reorder
+                  </Button>
                 </div>
               </div>
               <div className="mt-3 text-sm text-muted-foreground">

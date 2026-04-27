@@ -1,9 +1,11 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { useEffect, useState } from "react";
 import { motion } from "framer-motion";
-import { ArrowUpRight } from "lucide-react";
+import { ArrowUpRight, Flame, Star } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { ProductCard, type ProductCardData } from "@/components/product-card";
+import { getRecentlyViewed } from "@/lib/recently-viewed";
+import { trackEvent } from "@/lib/analytics";
 import catFashion from "@/assets/cat-fashion.jpg";
 import catGrocery from "@/assets/cat-grocery.jpg";
 import catElectronics from "@/assets/cat-electronics.jpg";
@@ -26,16 +28,62 @@ export const Route = createFileRoute("/")({
 
 function HomePage() {
   const [latest, setLatest] = useState<ProductCardData[]>([]);
+  const [trending, setTrending] = useState<ProductCardData[]>([]);
+  const [bestSellers, setBestSellers] = useState<ProductCardData[]>([]);
+  const [recentlyViewed, setRecentlyViewed] = useState<ProductCardData[]>([]);
+  const [loadingLatest, setLoadingLatest] = useState(true);
+  const [newsletterEmail, setNewsletterEmail] = useState("");
+  const [newsletterDone, setNewsletterDone] = useState(false);
 
   useEffect(() => {
+    const viewed = getRecentlyViewed().map(({ viewedAt, ...rest }) => rest);
+    setRecentlyViewed(viewed as ProductCardData[]);
+
     supabase
       .from("products")
       .select("id, title, slug, price, compare_at_price, image_url, rating, rating_count, stock")
       .eq("active", true)
       .order("created_at", { ascending: false })
       .limit(8)
-      .then(({ data }) => setLatest((data ?? []) as ProductCardData[]));
+      .then(({ data }) => setLatest((data ?? []) as ProductCardData[]))
+      .finally(() => setLoadingLatest(false));
+
+    supabase
+      .from("products")
+      .select("id, title, slug, price, compare_at_price, image_url, rating, rating_count, stock")
+      .eq("active", true)
+      .gt("stock", 0)
+      .order("rating", { ascending: false, nullsFirst: false })
+      .order("rating_count", { ascending: false })
+      .limit(4)
+      .then(({ data }) => setBestSellers((data ?? []) as ProductCardData[]));
+
+    supabase
+      .from("products")
+      .select("id, title, slug, price, compare_at_price, image_url, rating, rating_count, stock")
+      .eq("active", true)
+      .gt("stock", 0)
+      .order("updated_at", { ascending: false })
+      .limit(4)
+      .then(({ data }) => setTrending((data ?? []) as ProductCardData[]));
   }, []);
+
+  const handleNewsletter = (e: React.FormEvent) => {
+    e.preventDefault();
+    const email = newsletterEmail.trim().toLowerCase();
+    if (!email || !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) return;
+    try {
+      const key = "maison-newsletter-signups";
+      const prev = JSON.parse(localStorage.getItem(key) ?? "[]") as string[];
+      const next = [email, ...prev.filter((v) => v !== email)].slice(0, 500);
+      localStorage.setItem(key, JSON.stringify(next));
+      setNewsletterDone(true);
+      setNewsletterEmail("");
+      trackEvent("newsletter_subscribe", { emailDomain: email.split("@")[1] ?? "unknown" });
+    } catch {
+      // ignore storage errors
+    }
+  };
 
   return (
     <div className="bg-background">
@@ -54,7 +102,7 @@ function HomePage() {
             </>
           }
           subtitle="Asymmetric silhouettes, considered tailoring, and pieces that read like a manifesto."
-          cta="Enter the lookbook"
+          cta="Shop fashion now"
           image={catFashion}
           align="left"
         />
@@ -72,11 +120,40 @@ function HomePage() {
             </>
           }
           subtitle="Seasonal produce, slow ingredients, and pantry essentials with a sense of place."
-          cta="Open the pantry"
+          cta="Shop groceries now"
           image={catGrocery}
           align="right"
         />
       </section>
+
+      {(bestSellers.length > 0 || trending.length > 0) && (
+        <section className="mx-auto max-w-[1400px] px-5 sm:px-8 py-14">
+          <div className="grid gap-10 md:grid-cols-2">
+            <div>
+              <div className="mb-5 flex items-center justify-between">
+                <h2 className="editorial-headline text-4xl">Best sellers</h2>
+                <Star className="h-4 w-4" />
+              </div>
+              <div className="grid grid-cols-2 gap-4">
+                {bestSellers.map((p) => (
+                  <ProductCard key={p.id} product={p} />
+                ))}
+              </div>
+            </div>
+            <div>
+              <div className="mb-5 flex items-center justify-between">
+                <h2 className="editorial-headline text-4xl">Trending now</h2>
+                <Flame className="h-4 w-4" />
+              </div>
+              <div className="grid grid-cols-2 gap-4">
+                {trending.map((p) => (
+                  <ProductCard key={p.id} product={p} />
+                ))}
+              </div>
+            </div>
+          </div>
+        </section>
+      )}
 
       {/* ===== THE OTHER THREE — bento strip ===== */}
       <section className="mx-auto max-w-[1400px] px-5 sm:px-8 py-20">
@@ -122,7 +199,7 @@ function HomePage() {
       </section>
 
       {/* ===== LATEST DROP ===== */}
-      {latest.length > 0 && (
+      {(loadingLatest || latest.length > 0) && (
         <section className="mx-auto max-w-[1400px] px-5 sm:px-8 pb-24">
           <div className="flex items-end justify-between mb-10 border-t border-border pt-12">
             <div>
@@ -132,8 +209,38 @@ function HomePage() {
               <h2 className="mt-3 editorial-headline text-5xl sm:text-6xl">Just arrived.</h2>
             </div>
           </div>
+          {loadingLatest ? (
+            <div className="grid grid-cols-2 md:grid-cols-4 gap-4 md:gap-6">
+              {Array.from({ length: 4 }).map((_, i) => (
+                <div key={i} className="animate-pulse">
+                  <div className="aspect-[4/5] bg-muted" />
+                  <div className="mt-3 h-4 w-2/3 bg-muted" />
+                  <div className="mt-2 h-3 w-1/3 bg-muted" />
+                </div>
+              ))}
+            </div>
+          ) : (
+            <div className="grid grid-cols-2 md:grid-cols-4 gap-4 md:gap-6">
+              {latest.map((p) => (
+                <ProductCard key={p.id} product={p} />
+              ))}
+            </div>
+          )}
+        </section>
+      )}
+
+      {recentlyViewed.length > 0 && (
+        <section className="mx-auto max-w-[1400px] px-5 sm:px-8 pb-24">
+          <div className="flex items-end justify-between mb-10 border-t border-border pt-12">
+            <div>
+              <p className="font-mono text-[11px] uppercase tracking-[0.25em] text-muted-foreground">
+                Continue browsing
+              </p>
+              <h2 className="mt-3 editorial-headline text-5xl sm:text-6xl">Recently viewed.</h2>
+            </div>
+          </div>
           <div className="grid grid-cols-2 md:grid-cols-4 gap-4 md:gap-6">
-            {latest.map((p) => (
+            {recentlyViewed.slice(0, 4).map((p) => (
               <ProductCard key={p.id} product={p} />
             ))}
           </div>
@@ -153,23 +260,22 @@ function HomePage() {
             </p>
           </div>
           <div className="px-8 py-14 flex items-center">
-            <form
-              onSubmit={(e) => e.preventDefault()}
-              className="w-full max-w-md flex flex-col sm:flex-row gap-3"
-            >
+            <form onSubmit={handleNewsletter} className="w-full max-w-md flex flex-col sm:flex-row gap-3">
               <input
                 type="email"
                 placeholder="your@email.com"
+                value={newsletterEmail}
+                onChange={(e) => setNewsletterEmail(e.target.value)}
                 className="flex-1 border-b border-border bg-transparent pb-2 text-sm placeholder:text-muted-foreground/50 outline-none focus:border-foreground transition-colors"
               />
               <button
                 type="submit"
                 className="shrink-0 font-mono text-[11px] uppercase tracking-[0.22em] bg-foreground text-background px-5 py-2.5 hover:bg-foreground/90 transition-colors"
-              >
-                Subscribe
-              </button>
-            </form>
-          </div>
+                >
+                  {newsletterDone ? "Subscribed" : "Subscribe"}
+                </button>
+              </form>
+            </div>
         </div>
       </section>
 
