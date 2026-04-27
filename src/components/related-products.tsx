@@ -5,22 +5,29 @@ import { ProductCard, type ProductCardData } from "@/components/product-card";
 interface Props {
   productId: string;
   categoryId: string | null;
+  brand?: string | null;
 }
 
-export function RelatedProducts({ productId, categoryId }: Props) {
+export function RelatedProducts({ productId, categoryId, brand }: Props) {
   const [items, setItems] = useState<ProductCardData[]>([]);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
     let cancelled = false;
     setLoading(true);
-    const q = supabase
+    const base = supabase
       .from("products")
-      .select("id, title, slug, price, compare_at_price, image_url, rating, rating_count, stock")
+      .select(
+        "id, title, slug, price, compare_at_price, image_url, rating, rating_count, stock, featured, brand",
+      )
       .eq("active", true)
       .neq("id", productId)
       .limit(8);
-    const final = categoryId ? q.eq("category_id", categoryId) : q;
+    let q = categoryId ? base.eq("category_id", categoryId) : base;
+    if (brand) q = q.eq("brand", brand);
+    const final = q
+      .order("featured", { ascending: false, nullsFirst: false })
+      .order("rating", { ascending: false, nullsFirst: false });
     final.then(({ data }) => {
       if (cancelled) return;
       setItems((data ?? []) as ProductCardData[]);
@@ -29,7 +36,7 @@ export function RelatedProducts({ productId, categoryId }: Props) {
     return () => {
       cancelled = true;
     };
-  }, [productId, categoryId]);
+  }, [productId, categoryId, brand]);
 
   if (loading || items.length === 0) return null;
 

@@ -1,0 +1,2 @@
+export const FREE_SHIPPING_THRESHOLD = 499;
+export const DELIVERY_ESTIMATE_DAYS = 4;

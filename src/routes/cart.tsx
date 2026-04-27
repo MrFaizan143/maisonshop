@@ -1,9 +1,14 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
+import { useEffect, useMemo, useState } from "react";
 import { Trash2, Minus, Plus, ShoppingBag, ArrowUpRight } from "lucide-react";
 import { motion } from "framer-motion";
 import { Button } from "@/components/ui/button";
 import { useCartStore } from "@/stores/cart-store";
 import { formatINR } from "@/lib/format";
+import { supabase } from "@/integrations/supabase/client";
+import { ProductCard, type ProductCardData } from "@/components/product-card";
+import { trackEvent } from "@/lib/analytics";
+import { FREE_SHIPPING_THRESHOLD } from "@/lib/constants";
 
 export const Route = createFileRoute("/cart")({
   head: () => ({ meta: [{ title: "Cart — Maison" }] }),
@@ -15,8 +20,36 @@ function CartPage() {
   const updateQty = useCartStore((s) => s.updateQty);
   const removeItem = useCartStore((s) => s.removeItem);
   const subtotal = items.reduce((sum, i) => sum + i.price * i.quantity, 0);
-  const shipping = subtotal === 0 ? 0 : subtotal >= 499 ? 0 : 49;
+  const shipping = subtotal === 0 ? 0 : subtotal >= FREE_SHIPPING_THRESHOLD ? 0 : 49;
   const total = subtotal + shipping;
+  const [upsell, setUpsell] = useState<ProductCardData[]>([]);
+  const inCartIds = useMemo(() => items.map((i) => i.productId), [items]);
+  const freeShippingRemaining = Math.max(0, FREE_SHIPPING_THRESHOLD - subtotal);
+  const freeShippingProgress = Math.min(
+    100,
+    Math.round((subtotal / FREE_SHIPPING_THRESHOLD) * 100),
+  );
+
+  useEffect(() => {
+    if (items.length === 0) return;
+    let cancelled = false;
+    supabase
+      .from("products")
+      .select("id, title, slug, price, compare_at_price, image_url, rating, rating_count, stock")
+      .eq("active", true)
+      .gt("stock", 0)
+      .order("featured", { ascending: false })
+      .order("rating", { ascending: false, nullsFirst: false })
+      .limit(6)
+      .then(({ data }) => {
+        if (cancelled) return;
+        const filtered = ((data ?? []) as ProductCardData[]).filter((p) => !inCartIds.includes(p.id));
+        setUpsell(filtered.slice(0, 4));
+      });
+    return () => {
+      cancelled = true;
+    };
+  }, [items.length, inCartIds]);
 
   if (items.length === 0) {
     return (
@@ -127,9 +160,22 @@ function CartPage() {
               </div>
               {shipping > 0 && (
                 <p className="font-mono text-[10px] uppercase tracking-[0.15em] text-muted-foreground">
-                  Add {formatINR(499 - subtotal)} more for free shipping
+                  Add {formatINR(FREE_SHIPPING_THRESHOLD - subtotal)} more for free shipping
                 </p>
               )}
+              <div className="space-y-1.5">
+                <div className="h-2 w-full overflow-hidden rounded-full bg-muted">
+                  <div
+                    className="h-full bg-foreground transition-all"
+                    style={{ width: `${freeShippingProgress}%` }}
+                  />
+                </div>
+                <p className="text-[11px] text-muted-foreground">
+                  {freeShippingRemaining === 0
+                    ? "You unlocked free shipping."
+                    : `${formatINR(freeShippingRemaining)} away from free shipping`}
+                </p>
+              </div>
             </div>
             <div className="mt-6 border-t border-border pt-5 flex justify-between">
               <span className="font-display text-xl">Total</span>
@@ -138,6 +184,13 @@ function CartPage() {
             <Link to="/checkout" className="mt-6 block">
               <Button
                 size="lg"
+                onClick={() =>
+                  trackEvent("begin_checkout", {
+                    source: "cart",
+                    total,
+                    itemCount: items.length,
+                  })
+                }
                 className="w-full bg-foreground text-background hover:bg-foreground/90 font-mono text-[11px] uppercase tracking-[0.22em] rounded-none"
               >
                 Proceed to Checkout
@@ -148,6 +201,21 @@ function CartPage() {
             </p>
           </aside>
         </div>
+        {upsell.length > 0 && (
+          <section className="mt-12 border-t border-border pt-10">
+            <div className="mb-5 flex items-baseline justify-between">
+              <h2 className="font-display text-xl sm:text-2xl">Complete your order</h2>
+              <span className="font-mono text-[10px] uppercase tracking-[0.18em] text-muted-foreground">
+                Recommended add-ons
+              </span>
+            </div>
+            <div className="grid grid-cols-2 gap-4 sm:grid-cols-3 md:grid-cols-4 md:gap-6">
+              {upsell.map((p) => (
+                <ProductCard key={p.id} product={p} />
+              ))}
+            </div>
+          </section>
+        )}
       </div>
     </div>
   );

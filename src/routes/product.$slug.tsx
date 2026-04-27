@@ -1,5 +1,5 @@
 import { createFileRoute, Link, notFound } from "@tanstack/react-router";
-import { useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import {
   Star,
   ShoppingCart,
@@ -17,6 +17,9 @@ import { formatINR, discountPct } from "@/lib/format";
 import { toast } from "sonner";
 import { cn } from "@/lib/utils";
 import { RelatedProducts } from "@/components/related-products";
+import { trackEvent } from "@/lib/analytics";
+import { pushRecentlyViewed } from "@/lib/recently-viewed";
+import { DELIVERY_ESTIMATE_DAYS } from "@/lib/constants";
 
 export const Route = createFileRoute("/product/$slug")({
   loader: async ({ params }) => {
@@ -42,6 +45,11 @@ export const Route = createFileRoute("/product/$slug")({
           { property: "og:title", content: loaderData.product.title },
           {
             property: "og:description",
+            content: (loaderData.product.description ?? "").slice(0, 160),
+          },
+          { name: "twitter:title", content: loaderData.product.title },
+          {
+            name: "twitter:description",
             content: (loaderData.product.description ?? "").slice(0, 160),
           },
           ...(loaderData.product.image_url
@@ -91,12 +99,48 @@ function ProductPage() {
       qty,
     );
     toast.success("Added to cart", { description: `${qty} × ${product.title}` });
+    trackEvent("add_to_cart", {
+      productId: product.id,
+      slug: product.slug,
+      title: product.title,
+      qty,
+      price: Number(product.price),
+      source: "product_page",
+    });
   };
 
   const inStock = product.stock > 0;
+  const lowStock = inStock && product.stock <= 5;
+  const estimatedDelivery = useMemo(() => {
+    const date = new Date();
+    date.setDate(date.getDate() + DELIVERY_ESTIMATE_DAYS);
+    return date.toLocaleDateString("en-IN", { weekday: "short", day: "numeric", month: "short" });
+  }, []);
+
+  useEffect(() => {
+    pushRecentlyViewed({
+      id: product.id,
+      slug: product.slug,
+      title: product.title,
+      price: Number(product.price),
+      image_url: product.image_url,
+      compare_at_price: product.compare_at_price,
+      rating: product.rating,
+      rating_count: product.rating_count,
+      stock: product.stock,
+    });
+    trackEvent("view_product", { productId: product.id, slug: product.slug, title: product.title });
+  }, [product]);
 
   const handleBuyNow = () => {
     if (!inStock) return;
+    trackEvent("begin_checkout", {
+      source: "buy_now",
+      productId: product.id,
+      slug: product.slug,
+      qty,
+      total: Number(product.price) * qty,
+    });
     handleAdd();
     navigate({ to: "/checkout" });
   };
@@ -193,6 +237,7 @@ function ProductPage() {
             ) : (
               <span className="text-sm font-semibold text-deal">● Out of Stock</span>
             )}
+            {lowStock && <span className="text-xs font-semibold text-deal">Only {product.stock} left</span>}
           </div>
 
           {inStock && (
@@ -254,6 +299,13 @@ function ProductPage() {
             ))}
           </div>
 
+          <div className="mt-5 rounded-lg border border-border bg-muted/40 p-3 text-sm">
+            <p>
+              Delivery by <span className="font-semibold">{estimatedDelivery}</span> · 7-day returns · COD
+              available
+            </p>
+          </div>
+
           {product.description && (
             <div className="mt-6">
               <h2 className="text-base font-semibold">About this item</h2>
@@ -265,7 +317,35 @@ function ProductPage() {
         </div>
       </div>
 
-      <RelatedProducts productId={product.id} categoryId={product.category_id} />
+      <RelatedProducts productId={product.id} categoryId={product.category_id} brand={product.brand} />
+      <script
+        type="application/ld+json"
+        dangerouslySetInnerHTML={{
+          __html: JSON.stringify({
+            "@context": "https://schema.org",
+            "@type": "Product",
+            name: product.title,
+            description: product.description,
+            image: allImages,
+            sku: product.id,
+            brand: product.brand ? { "@type": "Brand", name: product.brand } : undefined,
+            offers: {
+              "@type": "Offer",
+              priceCurrency: "INR",
+              price: Number(product.price),
+              availability: inStock ? "https://schema.org/InStock" : "https://schema.org/OutOfStock",
+            },
+            aggregateRating:
+              product.rating != null && product.rating > 0
+                ? {
+                    "@type": "AggregateRating",
+                    ratingValue: Number(product.rating).toFixed(1),
+                    reviewCount: product.rating_count,
+                  }
+                : undefined,
+          }),
+        }}
+      />
     </div>
   );
 }

@@ -7,6 +7,7 @@ import { ProductCard, type ProductCardData } from "@/components/product-card";
 
 const SORTS = ["relevance", "price_asc", "price_desc", "rating", "newest"] as const;
 type Sort = (typeof SORTS)[number];
+const MAX_RECENT_SEARCHES = 6;
 
 const searchSchema = z.object({
   q: z.string().optional(),
@@ -44,6 +45,16 @@ function SearchPage() {
   const activeSort: Sort = sort ?? "relevance";
   const [results, setResults] = useState<ProductCardData[]>([]);
   const [loading, setLoading] = useState(false);
+  const [recentSearches, setRecentSearches] = useState<string[]>([]);
+
+  useEffect(() => {
+    try {
+      const raw = localStorage.getItem("maison-recent-searches");
+      setRecentSearches(raw ? (JSON.parse(raw) as string[]) : []);
+    } catch {
+      setRecentSearches([]);
+    }
+  }, []);
 
   const updateSearch = (patch: { sort?: Sort; in_stock?: boolean }) => {
     navigate({
@@ -81,6 +92,20 @@ function SearchPage() {
       if (cancelled) return;
       setResults((data ?? []) as ProductCardData[]);
       setLoading(false);
+      if (safe) {
+        setRecentSearches((prev) => {
+          const next = [safe, ...prev.filter((s) => s.toLowerCase() !== safe.toLowerCase())].slice(
+            0,
+            MAX_RECENT_SEARCHES,
+          );
+          try {
+            localStorage.setItem("maison-recent-searches", JSON.stringify(next));
+          } catch {
+            // ignore
+          }
+          return next;
+        });
+      }
     });
     return () => {
       cancelled = true;
@@ -119,6 +144,19 @@ function SearchPage() {
                 ? `${results.length} result${results.length === 1 ? "" : "s"} found`
                 : "Enter a term above to begin"}
           </p>
+          {!q && recentSearches.length > 0 && (
+            <div className="mt-6 flex flex-wrap gap-2">
+              {recentSearches.map((item) => (
+                <button
+                  key={item}
+                  onClick={() => navigate({ to: "/search", search: (prev) => ({ ...prev, q: item }) })}
+                  className="rounded-full border border-border px-3 py-1 text-xs hover:bg-muted"
+                >
+                  {item}
+                </button>
+              ))}
+            </div>
+          )}
         </div>
       </section>
 
@@ -159,6 +197,17 @@ function SearchPage() {
             <p className="mt-3 font-mono text-[11px] uppercase tracking-[0.22em] text-muted-foreground">
               Try a different term or browse our categories.
             </p>
+            <div className="mt-6 flex flex-wrap justify-center gap-2">
+              {["fashion", "grocery", "electronics", "home", "beauty"].map((slug) => (
+                <button
+                  key={slug}
+                  onClick={() => navigate({ to: "/search", search: (prev) => ({ ...prev, q: slug }) })}
+                  className="rounded-full border border-border px-3 py-1 text-xs hover:bg-muted"
+                >
+                  Try “{slug}”
+                </button>
+              ))}
+            </div>
           </div>
         ) : (
           <div className="grid grid-cols-2 gap-4 sm:grid-cols-3 md:grid-cols-4 md:gap-6">

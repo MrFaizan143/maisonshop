@@ -4,6 +4,7 @@ import { formatINR, discountPct } from "@/lib/format";
 import { useCartStore } from "@/stores/cart-store";
 import { useDragToCart } from "@/components/drag-to-cart-provider";
 import { toast } from "sonner";
+import { trackEvent } from "@/lib/analytics";
 
 export interface ProductCardData {
   id: string;
@@ -45,6 +46,14 @@ export function ProductCard({ product }: { product: ProductCardData }) {
       1,
     );
     toast.success("Added to cart", { description: product.title });
+    trackEvent("add_to_cart", {
+      productId: product.id,
+      slug: product.slug,
+      title: product.title,
+      qty: 1,
+      price: product.price,
+      source: "product_card",
+    });
   };
 
   return (

@@ -11,6 +11,8 @@ import { useCartStore } from "@/stores/cart-store";
 import { formatINR } from "@/lib/format";
 import { toast } from "sonner";
 import { cn } from "@/lib/utils";
+import { trackEvent } from "@/lib/analytics";
+import { FREE_SHIPPING_THRESHOLD } from "@/lib/constants";
 
 export const Route = createFileRoute("/checkout")({
   head: () => ({ meta: [{ title: "Checkout — Maison" }] }),
@@ -38,7 +40,7 @@ function CheckoutPage() {
   const items = useCartStore((s) => s.items);
   const clearCart = useCartStore((s) => s.clearCart);
   const subtotal = items.reduce((sum, i) => sum + i.price * i.quantity, 0);
-  const shipping = subtotal === 0 ? 0 : subtotal >= 499 ? 0 : 49;
+  const shipping = subtotal === 0 ? 0 : subtotal >= FREE_SHIPPING_THRESHOLD ? 0 : 49;
   const total = subtotal + shipping;
 
   const [saved, setSaved] = useState<SavedAddress[]>([]);
@@ -192,6 +194,13 @@ function CheckoutPage() {
       });
     }
     clearCart();
+    trackEvent("purchase", {
+      orderId: order.id,
+      orderNumber: order.order_number,
+      total,
+      itemCount: items.length,
+      paymentMethod: "cod",
+    });
     toast.success(`Order ${order.order_number} placed!`);
     navigate({ to: "/order/$id", params: { id: order.id } });
   };
