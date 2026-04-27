@@ -7,6 +7,7 @@ import { ProductCard, type ProductCardData } from "@/components/product-card";
 
 const SORTS = ["relevance", "price_asc", "price_desc", "rating", "newest"] as const;
 type Sort = (typeof SORTS)[number];
+const MAX_RECENT_SEARCHES = 6;
 
 const searchSchema = z.object({
   q: z.string().optional(),
@@ -93,7 +94,10 @@ function SearchPage() {
       setLoading(false);
       if (safe) {
         setRecentSearches((prev) => {
-          const next = [safe, ...prev.filter((s) => s.toLowerCase() !== safe.toLowerCase())].slice(0, 6);
+          const next = [safe, ...prev.filter((s) => s.toLowerCase() !== safe.toLowerCase())].slice(
+            0,
+            MAX_RECENT_SEARCHES,
+          );
           try {
             localStorage.setItem("maison-recent-searches", JSON.stringify(next));
           } catch {

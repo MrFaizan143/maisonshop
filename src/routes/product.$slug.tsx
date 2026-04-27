@@ -19,6 +19,7 @@ import { cn } from "@/lib/utils";
 import { RelatedProducts } from "@/components/related-products";
 import { trackEvent } from "@/lib/analytics";
 import { pushRecentlyViewed } from "@/lib/recently-viewed";
+import { DELIVERY_ESTIMATE_DAYS } from "@/lib/constants";
 
 export const Route = createFileRoute("/product/$slug")({
   loader: async ({ params }) => {
@@ -112,7 +113,7 @@ function ProductPage() {
   const lowStock = inStock && product.stock <= 5;
   const estimatedDelivery = useMemo(() => {
     const date = new Date();
-    date.setDate(date.getDate() + 4);
+    date.setDate(date.getDate() + DELIVERY_ESTIMATE_DAYS);
     return date.toLocaleDateString("en-IN", { weekday: "short", day: "numeric", month: "short" });
   }, []);
 

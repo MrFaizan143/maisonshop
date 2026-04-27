@@ -8,6 +8,7 @@ import { formatINR } from "@/lib/format";
 import { supabase } from "@/integrations/supabase/client";
 import { ProductCard, type ProductCardData } from "@/components/product-card";
 import { trackEvent } from "@/lib/analytics";
+import { FREE_SHIPPING_THRESHOLD } from "@/lib/constants";
 
 export const Route = createFileRoute("/cart")({
   head: () => ({ meta: [{ title: "Cart — Maison" }] }),
@@ -19,12 +20,15 @@ function CartPage() {
   const updateQty = useCartStore((s) => s.updateQty);
   const removeItem = useCartStore((s) => s.removeItem);
   const subtotal = items.reduce((sum, i) => sum + i.price * i.quantity, 0);
-  const shipping = subtotal === 0 ? 0 : subtotal >= 499 ? 0 : 49;
+  const shipping = subtotal === 0 ? 0 : subtotal >= FREE_SHIPPING_THRESHOLD ? 0 : 49;
   const total = subtotal + shipping;
   const [upsell, setUpsell] = useState<ProductCardData[]>([]);
   const inCartIds = useMemo(() => items.map((i) => i.productId), [items]);
-  const freeShippingRemaining = Math.max(0, 499 - subtotal);
-  const freeShippingProgress = Math.min(100, Math.round((subtotal / 499) * 100));
+  const freeShippingRemaining = Math.max(0, FREE_SHIPPING_THRESHOLD - subtotal);
+  const freeShippingProgress = Math.min(
+    100,
+    Math.round((subtotal / FREE_SHIPPING_THRESHOLD) * 100),
+  );
 
   useEffect(() => {
     if (items.length === 0) return;
@@ -156,7 +160,7 @@ function CartPage() {
               </div>
               {shipping > 0 && (
                 <p className="font-mono text-[10px] uppercase tracking-[0.15em] text-muted-foreground">
-                  Add {formatINR(499 - subtotal)} more for free shipping
+                  Add {formatINR(FREE_SHIPPING_THRESHOLD - subtotal)} more for free shipping
                 </p>
               )}
               <div className="space-y-1.5">

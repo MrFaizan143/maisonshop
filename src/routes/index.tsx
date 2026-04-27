@@ -6,11 +6,14 @@ import { supabase } from "@/integrations/supabase/client";
 import { ProductCard, type ProductCardData } from "@/components/product-card";
 import { getRecentlyViewed } from "@/lib/recently-viewed";
 import { trackEvent } from "@/lib/analytics";
+import { isValidEmail } from "@/lib/validation";
 import catFashion from "@/assets/cat-fashion.jpg";
 import catGrocery from "@/assets/cat-grocery.jpg";
 import catElectronics from "@/assets/cat-electronics.jpg";
 import catHome from "@/assets/cat-home.jpg";
 import catBeauty from "@/assets/cat-beauty.jpg";
+
+const MAX_NEWSLETTER_SIGNUPS = 500;
 
 export const Route = createFileRoute("/")({
   component: HomePage,
@@ -71,11 +74,11 @@ function HomePage() {
   const handleNewsletter = (e: React.FormEvent) => {
     e.preventDefault();
     const email = newsletterEmail.trim().toLowerCase();
-    if (!email || !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) return;
+    if (!email || !isValidEmail(email)) return;
     try {
       const key = "maison-newsletter-signups";
       const prev = JSON.parse(localStorage.getItem(key) ?? "[]") as string[];
-      const next = [email, ...prev.filter((v) => v !== email)].slice(0, 500);
+      const next = [email, ...prev.filter((v) => v !== email)].slice(0, MAX_NEWSLETTER_SIGNUPS);
       localStorage.setItem(key, JSON.stringify(next));
       setNewsletterDone(true);
       setNewsletterEmail("");

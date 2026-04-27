@@ -25,7 +25,9 @@ export function RelatedProducts({ productId, categoryId, brand }: Props) {
       .limit(8);
     let q = categoryId ? base.eq("category_id", categoryId) : base;
     if (brand) q = q.eq("brand", brand);
-    const final = q.order("featured", { ascending: false }).order("rating", { ascending: false });
+    const final = q
+      .order("featured", { ascending: false, nullsFirst: false })
+      .order("rating", { ascending: false, nullsFirst: false });
     final.then(({ data }) => {
       if (cancelled) return;
       setItems((data ?? []) as ProductCardData[]);
@@ -34,7 +36,7 @@ export function RelatedProducts({ productId, categoryId, brand }: Props) {
     return () => {
       cancelled = true;
     };
-  }, [productId, categoryId]);
+  }, [productId, categoryId, brand]);
 
   if (loading || items.length === 0) return null;
 
