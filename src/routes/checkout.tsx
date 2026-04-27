@@ -177,7 +177,9 @@ function CheckoutPage() {
       const { error: rollbackError } = await supabase.from("orders").delete().eq("id", order.id);
       if (rollbackError) {
         console.error("Failed to rollback orphaned order", rollbackError);
-        toast.error("We could not fully rollback a failed order. Please contact support.");
+        toast.error(
+          `We couldn't fully rollback this failed order. Please contact support with reference ${order.order_number}.`,
+        );
       }
       toast.error("Order items failed", { description: itemsErr.message });
       setPlacing(false);
