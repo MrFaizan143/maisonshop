@@ -1,4 +1,4 @@
-import { useState, type FormEvent } from "react";
+import { useEffect, useState, type FormEvent } from "react";
 import { Link, useNavigate, useRouterState } from "@tanstack/react-router";
 import { Search, ShoppingBag, User, Menu, X, Package, LogOut, Shield } from "lucide-react";
 import {
@@ -30,6 +30,22 @@ export function SiteHeader() {
   const [mobileOpen, setMobileOpen] = useState(false);
   const [searchOpen, setSearchOpen] = useState(false);
   const path = useRouterState({ select: (s) => s.location.pathname });
+
+  useEffect(() => {
+    setMobileOpen(false);
+    setSearchOpen(false);
+  }, [path]);
+
+  useEffect(() => {
+    const onEsc = (event: KeyboardEvent) => {
+      if (event.key === "Escape") {
+        setMobileOpen(false);
+        setSearchOpen(false);
+      }
+    };
+    window.addEventListener("keydown", onEsc);
+    return () => window.removeEventListener("keydown", onEsc);
+  }, []);
 
   const onSearch = (e: FormEvent) => {
     e.preventDefault();
@@ -79,6 +95,8 @@ export function SiteHeader() {
             onClick={() => setSearchOpen((v) => !v)}
             className="grid h-10 w-10 place-items-center rounded-full hover:bg-white/10 transition"
             aria-label="Search"
+            aria-expanded={searchOpen}
+            aria-controls="site-search-panel"
           >
             <Search className="h-[18px] w-[18px]" />
           </button>
@@ -137,6 +155,7 @@ export function SiteHeader() {
             <Link
               to="/login"
               className="grid h-10 w-10 place-items-center rounded-full hover:bg-white/10 transition"
+              aria-label="Sign in"
             >
               <User className="h-[18px] w-[18px]" />
             </Link>
@@ -145,6 +164,7 @@ export function SiteHeader() {
           <Link
             to="/cart"
             className="relative grid h-10 w-10 place-items-center rounded-full hover:bg-white/10 transition"
+            aria-label={`Cart${totalCount > 0 ? ` (${totalCount} items)` : ""}`}
           >
             <ShoppingBag className="h-[18px] w-[18px]" />
             {totalCount > 0 && (
@@ -161,6 +181,8 @@ export function SiteHeader() {
             }}
             className="grid h-10 w-10 place-items-center rounded-full hover:bg-white/10 transition lg:hidden"
             aria-label="Menu"
+            aria-expanded={mobileOpen}
+            aria-controls="site-mobile-menu"
           >
             {mobileOpen ? (
               <X className="h-[18px] w-[18px]" />
@@ -173,7 +195,10 @@ export function SiteHeader() {
 
       {/* Search expander */}
       {searchOpen && (
-        <div className="border-t border-[oklch(0.18_0_0)] bg-[oklch(0.08_0_0)] animate-in fade-in slide-in-from-top-2 duration-200">
+        <div
+          id="site-search-panel"
+          className="border-t border-[oklch(0.18_0_0)] bg-[oklch(0.08_0_0)] animate-in fade-in slide-in-from-top-2 duration-200"
+        >
           <form
             onSubmit={onSearch}
             className="mx-auto flex max-w-[1400px] items-center gap-3 px-5 py-4 sm:px-8"
@@ -184,6 +209,7 @@ export function SiteHeader() {
               value={q}
               onChange={(e) => setQ(e.target.value)}
               placeholder="Search products, brands, categories…"
+              aria-label="Search products"
               className="flex-1 bg-transparent text-white placeholder:text-white/40 outline-none text-base"
             />
             <button
@@ -199,7 +225,10 @@ export function SiteHeader() {
 
       {/* Mobile menu */}
       {mobileOpen && (
-        <div className="border-t border-[oklch(0.18_0_0)] bg-[oklch(0.08_0_0)] lg:hidden animate-in fade-in slide-in-from-top-2 duration-200">
+        <div
+          id="site-mobile-menu"
+          className="border-t border-[oklch(0.18_0_0)] bg-[oklch(0.08_0_0)] lg:hidden animate-in fade-in slide-in-from-top-2 duration-200"
+        >
           <nav className="mx-auto flex max-w-[1400px] flex-col px-5 py-4">
             {CATEGORY_LINKS.map((c) => (
               <Link

@@ -14,9 +14,7 @@ export interface RecentlyViewedItem {
 const KEY = "maison-recently-viewed";
 const LIMIT = 12;
 
-export function pushRecentlyViewed(
-  input: Omit<RecentlyViewedItem, "viewedAt"> | null | undefined,
-) {
+export function pushRecentlyViewed(input: Omit<RecentlyViewedItem, "viewedAt"> | null | undefined) {
   if (typeof window === "undefined" || !input) return;
   try {
     const prev = getRecentlyViewed();
