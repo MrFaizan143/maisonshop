@@ -64,6 +64,16 @@ function AdminProductsPage() {
     toast.success(!active ? "Product enabled" : "Product disabled");
   };
 
+  const filtered = useMemo(() => {
+    const q = search.trim().toLowerCase();
+    return rows.filter((r) => {
+      if (statusFilter === "active" && !r.active) return false;
+      if (statusFilter === "disabled" && r.active) return false;
+      if (!q) return true;
+      return r.title.toLowerCase().includes(q) || r.slug.toLowerCase().includes(q);
+    });
+  }, [rows, search, statusFilter]);
+
   if (authLoading || loading)
     return (
       <div className="py-20 text-center">
