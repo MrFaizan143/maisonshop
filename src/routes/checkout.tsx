@@ -1,5 +1,5 @@
 import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
-import { useEffect, useState, type FormEvent } from "react";
+import { useEffect, useMemo, useState, type FormEvent } from "react";
 import { Loader2, Wallet, MapPin, Check } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -12,7 +12,7 @@ import { formatINR } from "@/lib/format";
 import { toast } from "sonner";
 import { cn } from "@/lib/utils";
 import { trackEvent } from "@/lib/analytics";
-import { FREE_SHIPPING_THRESHOLD } from "@/lib/constants";
+import { DELIVERY_ESTIMATE_DAYS, FREE_SHIPPING_THRESHOLD } from "@/lib/constants";
 
 export const Route = createFileRoute("/checkout")({
   head: () => ({ meta: [{ title: "Checkout — Maison" }] }),
@@ -33,6 +33,10 @@ interface SavedAddress {
 
 const PIN_RE = /^\d{6}$/;
 const PHONE_RE = /^[6-9]\d{9}$/;
+const PINCODE_API_BASE = "https://api.postalpincode.in/pincode";
+
+type CheckoutField = "full_name" | "phone" | "line1" | "city" | "state" | "pincode";
+type PincodeStatus = "idle" | "checking" | "serviceable" | "unserviceable" | "error";
 
 function CheckoutPage() {
   const navigate = useNavigate();
@@ -42,6 +46,11 @@ function CheckoutPage() {
   const subtotal = items.reduce((sum, i) => sum + i.price * i.quantity, 0);
   const shipping = subtotal === 0 ? 0 : subtotal >= FREE_SHIPPING_THRESHOLD ? 0 : 49;
   const total = subtotal + shipping;
+  const estimatedDelivery = useMemo(() => {
+    const date = new Date();
+    date.setDate(date.getDate() + DELIVERY_ESTIMATE_DAYS);
+    return date.toLocaleDateString("en-IN", { weekday: "short", day: "numeric", month: "short" });
+  }, []);
 
   const [saved, setSaved] = useState<SavedAddress[]>([]);
   const [selectedId, setSelectedId] = useState<string | "new">("new");
@@ -56,6 +65,9 @@ function CheckoutPage() {
     pincode: "",
   });
   const [placing, setPlacing] = useState(false);
+  const [errors, setErrors] = useState<Partial<Record<CheckoutField, string>>>({});
+  const [pincodeStatus, setPincodeStatus] = useState<PincodeStatus>("idle");
+  const [pincodeMessage, setPincodeMessage] = useState("");
 
   useEffect(() => {
     if (!authLoading && !user) navigate({ to: "/login" });
@@ -130,12 +142,101 @@ function CheckoutPage() {
     return null;
   };
 
+  const validateField = (field: CheckoutField, value: string): string => {
+    const v = value.trim();
+    if (field === "full_name" && v.length < 2) return "Please enter your full name";
+    if (field === "phone" && !PHONE_RE.test(v)) return "Enter a valid 10-digit Indian mobile number";
+    if (field === "line1" && v.length < 5) return "Address line 1 looks too short";
+    if (field === "city" && v.length < 2) return "Please enter your city";
+    if (field === "state" && v.length < 2) return "Please enter your state";
+    if (field === "pincode" && !PIN_RE.test(v)) return "Pincode must be 6 digits";
+    return "";
+  };
+
+  const setField = (field: keyof typeof form, value: string) => {
+    setForm((prev) => ({ ...prev, [field]: value }));
+    if (field in errors) {
+      const msg = validateField(field as CheckoutField, value);
+      setErrors((prev) => ({ ...prev, [field]: msg || undefined }));
+    }
+  };
+
+  useEffect(() => {
+    const pin = form.pincode.trim();
+    if (!PIN_RE.test(pin)) {
+      setPincodeStatus("idle");
+      setPincodeMessage("");
+      return;
+    }
+
+    let active = true;
+    const controller = new AbortController();
+    setPincodeStatus("checking");
+    setPincodeMessage("Checking delivery availability...");
+
+    const timeout = setTimeout(async () => {
+      try {
+        const res = await fetch(`${PINCODE_API_BASE}/${pin}`, {
+          signal: controller.signal,
+          headers: { Accept: "application/json" },
+        });
+        const data = (await res.json()) as
+          | Array<{ Status?: string; PostOffice?: unknown[]; Message?: string }>
+          | undefined;
+
+        if (!active) return;
+
+        const row = data?.[0];
+        const hasOffice = Array.isArray(row?.PostOffice) && row!.PostOffice.length > 0;
+        const serviceable = row?.Status === "Success" && hasOffice;
+
+        if (serviceable) {
+          setPincodeStatus("serviceable");
+          setPincodeMessage("Delivery is available to this pincode.");
+        } else {
+          setPincodeStatus("unserviceable");
+          setPincodeMessage("We currently cannot deliver to this pincode.");
+        }
+      } catch {
+        if (!active) return;
+        setPincodeStatus("error");
+        setPincodeMessage("Couldn't verify pincode now. You can still place your order.");
+      }
+    }, 350);
+
+    return () => {
+      active = false;
+      controller.abort();
+      clearTimeout(timeout);
+    };
+  }, [form.pincode]);
+
   const handlePlace = async (e: FormEvent) => {
     e.preventDefault();
-    if (!user) return;
+    if (!user || placing) return;
+
+    const nextErrors: Partial<Record<CheckoutField, string>> = {
+      full_name: validateField("full_name", form.full_name) || undefined,
+      phone: validateField("phone", form.phone) || undefined,
+      line1: validateField("line1", form.line1) || undefined,
+      city: validateField("city", form.city) || undefined,
+      state: validateField("state", form.state) || undefined,
+      pincode: validateField("pincode", form.pincode) || undefined,
+    };
+    setErrors(nextErrors);
+    const firstError = Object.values(nextErrors).find(Boolean);
+    if (firstError) {
+      toast.error(firstError);
+      return;
+    }
+
     const err = validate();
     if (err) {
       toast.error(err);
+      return;
+    }
+    if (pincodeStatus === "unserviceable") {
+      toast.error("This pincode is currently not serviceable");
       return;
     }
     setPlacing(true);
@@ -221,7 +322,8 @@ function CheckoutPage() {
 
   return (
     <div className="mx-auto max-w-7xl px-3 py-4 pb-28 sm:px-6 sm:py-6 lg:pb-6">
-      <h1 className="mb-4 text-2xl font-semibold">Checkout</h1>
+      <h1 className="mb-2 font-display text-3xl tracking-tight sm:text-4xl">Checkout</h1>
+      <p className="mb-4 text-sm text-muted-foreground">Secure checkout with cash on delivery.</p>
       <form onSubmit={handlePlace} className="grid gap-6 lg:grid-cols-[1fr_360px]">
         <div className="space-y-5 rounded-xl border border-border bg-card p-5 shadow-card">
           {saved.length > 0 && (
@@ -287,8 +389,16 @@ function CheckoutPage() {
                 required
                 maxLength={100}
                 value={form.full_name}
-                onChange={(e) => setForm({ ...form, full_name: e.target.value })}
+                onChange={(e) => setField("full_name", e.target.value)}
+                onBlur={(e) =>
+                  setErrors((prev) => ({
+                    ...prev,
+                    full_name: validateField("full_name", e.target.value) || undefined,
+                  }))
+                }
+                aria-invalid={!!errors.full_name}
               />
+              {errors.full_name && <p className="mt-1 text-xs text-destructive">{errors.full_name}</p>}
             </div>
             <div>
               <Label>Phone</Label>
@@ -298,10 +408,16 @@ function CheckoutPage() {
                 maxLength={10}
                 placeholder="10-digit mobile"
                 value={form.phone}
-                onChange={(e) =>
-                  setForm({ ...form, phone: e.target.value.replace(/\D/g, "").slice(0, 10) })
+                onChange={(e) => setField("phone", e.target.value.replace(/\D/g, "").slice(0, 10))}
+                onBlur={(e) =>
+                  setErrors((prev) => ({
+                    ...prev,
+                    phone: validateField("phone", e.target.value) || undefined,
+                  }))
                 }
+                aria-invalid={!!errors.phone}
               />
+              {errors.phone && <p className="mt-1 text-xs text-destructive">{errors.phone}</p>}
             </div>
             <div className="sm:col-span-2">
               <Label>Address line 1</Label>
@@ -309,15 +425,23 @@ function CheckoutPage() {
                 required
                 maxLength={200}
                 value={form.line1}
-                onChange={(e) => setForm({ ...form, line1: e.target.value })}
+                onChange={(e) => setField("line1", e.target.value)}
+                onBlur={(e) =>
+                  setErrors((prev) => ({
+                    ...prev,
+                    line1: validateField("line1", e.target.value) || undefined,
+                  }))
+                }
+                aria-invalid={!!errors.line1}
               />
+              {errors.line1 && <p className="mt-1 text-xs text-destructive">{errors.line1}</p>}
             </div>
             <div className="sm:col-span-2">
               <Label>Address line 2 (optional)</Label>
               <Input
                 maxLength={200}
                 value={form.line2}
-                onChange={(e) => setForm({ ...form, line2: e.target.value })}
+                onChange={(e) => setField("line2", e.target.value)}
               />
             </div>
             <div>
@@ -326,8 +450,16 @@ function CheckoutPage() {
                 required
                 maxLength={100}
                 value={form.city}
-                onChange={(e) => setForm({ ...form, city: e.target.value })}
+                onChange={(e) => setField("city", e.target.value)}
+                onBlur={(e) =>
+                  setErrors((prev) => ({
+                    ...prev,
+                    city: validateField("city", e.target.value) || undefined,
+                  }))
+                }
+                aria-invalid={!!errors.city}
               />
+              {errors.city && <p className="mt-1 text-xs text-destructive">{errors.city}</p>}
             </div>
             <div>
               <Label>State</Label>
@@ -335,8 +467,16 @@ function CheckoutPage() {
                 required
                 maxLength={100}
                 value={form.state}
-                onChange={(e) => setForm({ ...form, state: e.target.value })}
+                onChange={(e) => setField("state", e.target.value)}
+                onBlur={(e) =>
+                  setErrors((prev) => ({
+                    ...prev,
+                    state: validateField("state", e.target.value) || undefined,
+                  }))
+                }
+                aria-invalid={!!errors.state}
               />
+              {errors.state && <p className="mt-1 text-xs text-destructive">{errors.state}</p>}
             </div>
             <div>
               <Label>Pincode</Label>
@@ -346,9 +486,35 @@ function CheckoutPage() {
                 maxLength={6}
                 value={form.pincode}
                 onChange={(e) =>
-                  setForm({ ...form, pincode: e.target.value.replace(/\D/g, "").slice(0, 6) })
+                  setField("pincode", e.target.value.replace(/\D/g, "").slice(0, 6))
                 }
+                onBlur={(e) =>
+                  setErrors((prev) => ({
+                    ...prev,
+                    pincode: validateField("pincode", e.target.value) || undefined,
+                  }))
+                }
+                aria-invalid={!!errors.pincode}
               />
+              {errors.pincode && <p className="mt-1 text-xs text-destructive">{errors.pincode}</p>}
+              {!!pincodeMessage && !errors.pincode && (
+                <p
+                  className={cn(
+                    "mt-1 text-xs",
+                    pincodeStatus === "serviceable" && "text-success",
+                    pincodeStatus === "unserviceable" && "text-destructive",
+                    (pincodeStatus === "checking" || pincodeStatus === "error") &&
+                      "text-muted-foreground",
+                  )}
+                >
+                  {pincodeMessage}
+                </p>
+              )}
+              {pincodeStatus === "serviceable" && !errors.pincode && (
+                <p className="mt-1 text-xs text-muted-foreground">
+                  Estimated delivery by <span className="font-semibold text-foreground">{estimatedDelivery}</span>
+                </p>
+              )}
             </div>
           </div>
 
@@ -371,6 +537,18 @@ function CheckoutPage() {
                 <div className="text-xs text-muted-foreground">Pay when your order arrives</div>
               </div>
             </div>
+          </div>
+
+          <div className="rounded-lg border border-border bg-muted/30 p-4">
+            <h3 className="text-sm font-semibold">What happens after you place the order</h3>
+            <ul className="mt-2 space-y-1.5 text-xs text-muted-foreground">
+              <li>We confirm your order within minutes.</li>
+              <li>Dispatch usually happens within 24 hours.</li>
+              <li>
+                Delivery expected by <span className="font-semibold text-foreground">{estimatedDelivery}</span>.
+              </li>
+              <li>Pay on delivery and enjoy 7-day easy returns.</li>
+            </ul>
           </div>
         </div>
 
@@ -404,10 +582,13 @@ function CheckoutPage() {
             type="submit"
             disabled={placing}
             size="lg"
-            className="mt-5 w-full bg-deal text-white hover:bg-deal/90 font-semibold"
+            className="btn-premium-primary mt-5 w-full bg-deal text-white hover:bg-deal/90"
           >
             {placing ? <Loader2 className="h-4 w-4 animate-spin" /> : `Place Order (COD)`}
           </Button>
+          <p className="mt-3 text-center text-[11px] text-muted-foreground">
+            By placing the order, you agree to pay on delivery. No advance payment required.
+          </p>
           <Link
             to="/cart"
             className="mt-3 block text-center text-xs text-muted-foreground hover:text-foreground"
@@ -424,12 +605,13 @@ function CheckoutPage() {
                 Total
               </div>
               <div className="text-lg font-bold">{formatINR(total)}</div>
+              <div className="text-[10px] text-muted-foreground">ETA: {estimatedDelivery}</div>
             </div>
             <Button
               type="submit"
               disabled={placing}
               size="lg"
-              className="flex-1 bg-deal text-white hover:bg-deal/90 font-semibold"
+              className="btn-premium-primary flex-1 bg-deal text-white hover:bg-deal/90"
             >
               {placing ? <Loader2 className="h-4 w-4 animate-spin" /> : "Place Order (COD)"}
             </Button>

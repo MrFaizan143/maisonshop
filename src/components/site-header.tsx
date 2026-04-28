@@ -20,6 +20,7 @@ const CATEGORY_LINKS = [
   { slug: "home", label: "Home" },
   { slug: "beauty", label: "Beauty" },
 ];
+const QUICK_SEARCH_TERMS = ["Summer dress", "Skin care", "Coffee", "Wireless earbuds"];
 
 export function SiteHeader() {
   const navigate = useNavigate();
@@ -50,12 +51,10 @@ export function SiteHeader() {
   const onSearch = (e: FormEvent) => {
     e.preventDefault();
     const trimmed = q.trim().slice(0, 100);
-    if (trimmed) {
-      navigate({ to: "/search", search: { q: trimmed } });
-      setMobileOpen(false);
-      setSearchOpen(false);
-      setQ("");
-    }
+    navigate({ to: "/search", search: { q: trimmed } });
+    setMobileOpen(false);
+    setSearchOpen(false);
+    setQ("");
   };
 
   return (
@@ -213,6 +212,12 @@ export function SiteHeader() {
               className="flex-1 bg-transparent text-white placeholder:text-white/40 outline-none text-base"
             />
             <button
+              type="submit"
+              className="rounded-md border border-white/25 px-3 py-1 text-xs uppercase tracking-wider text-white/80 hover:border-white/50 hover:text-white"
+            >
+              Search
+            </button>
+            <button
               type="button"
               onClick={() => setSearchOpen(false)}
               className="text-xs uppercase tracking-wider text-white/60 hover:text-white"
@@ -220,6 +225,22 @@ export function SiteHeader() {
               Close
             </button>
           </form>
+          <div className="mx-auto flex max-w-[1400px] flex-wrap gap-2 px-5 pb-4 sm:px-8">
+            {QUICK_SEARCH_TERMS.map((term) => (
+              <button
+                key={term}
+                type="button"
+                onClick={() => {
+                  navigate({ to: "/search", search: { q: term } });
+                  setSearchOpen(false);
+                  setQ("");
+                }}
+                className="rounded-full border border-white/20 px-3 py-1 text-[11px] uppercase tracking-[0.18em] text-white/80 hover:border-white/45 hover:text-white"
+              >
+                {term}
+              </button>
+            ))}
+          </div>
         </div>
       )}
 

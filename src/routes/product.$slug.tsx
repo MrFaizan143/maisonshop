@@ -73,6 +73,7 @@ export const Route = createFileRoute("/product/$slug")({
 function ProductPage() {
   const { product } = Route.useLoaderData();
   const addItem = useCartStore((s) => s.addItem);
+  const cartCount = useCartStore((s) => s.totalCount());
   const navigate = Route.useNavigate();
   const [qty, setQty] = useState(1);
   const allImages: string[] = product.image_url
@@ -147,7 +148,7 @@ function ProductPage() {
   };
 
   return (
-    <div className="mx-auto max-w-7xl px-3 py-4 sm:px-6 sm:py-6">
+    <div className="mx-auto max-w-7xl px-3 py-4 pb-28 sm:px-6 sm:py-6 sm:pb-6">
       <nav className="mb-3 text-xs text-muted-foreground">
         <Link to="/" className="hover:text-foreground">
           Home
@@ -269,7 +270,7 @@ function ProductPage() {
               onClick={handleAdd}
               disabled={!inStock}
               size="lg"
-              className="flex-1 bg-accent text-accent-foreground hover:bg-accent/90 font-semibold"
+              className="btn-premium-secondary flex-1"
             >
               <ShoppingCart className="mr-2 h-5 w-5" /> Add to Cart
             </Button>
@@ -278,7 +279,7 @@ function ProductPage() {
               onClick={handleBuyNow}
               disabled={!inStock}
               size="lg"
-              className="flex-1 bg-deal text-white hover:bg-deal/90 font-semibold"
+              className="btn-premium-primary flex-1 bg-deal text-white hover:bg-deal/90"
             >
               Buy Now
             </Button>
@@ -355,6 +356,42 @@ function ProductPage() {
           }),
         }}
       />
+
+      {inStock && (
+        <div className="fixed inset-x-0 bottom-0 z-40 border-t border-border bg-card/95 p-3 shadow-lg backdrop-blur lg:hidden">
+          <div className="mx-auto flex max-w-7xl items-center gap-3">
+            <div className="min-w-0">
+              <p className="truncate text-xs text-muted-foreground">{product.title}</p>
+              <p className="font-mono text-sm font-semibold">
+                {formatINR(Number(product.price) * qty)} · Qty {qty}
+              </p>
+            </div>
+            <Button
+              onClick={handleAdd}
+              size="sm"
+              className="btn-premium-secondary"
+            >
+              Add
+            </Button>
+            <Button
+              type="button"
+              onClick={handleBuyNow}
+              size="sm"
+              className="btn-premium-primary bg-deal text-white hover:bg-deal/90"
+            >
+              Buy now
+            </Button>
+            {cartCount > 0 && (
+              <Link
+                to="/cart"
+                className="rounded-md border border-border px-2 py-1.5 text-xs text-muted-foreground"
+              >
+                Cart ({cartCount})
+              </Link>
+            )}
+          </div>
+        </div>
+      )}
     </div>
   );
 }
