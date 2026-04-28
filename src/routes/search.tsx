@@ -66,6 +66,7 @@ function SearchPage() {
   useEffect(() => {
     if (!q) {
       setResults([]);
+      setLoading(false);
       return;
     }
     setLoading(true);
@@ -80,39 +81,42 @@ function SearchPage() {
     }
     const term = `%${safe}%`;
     let cancelled = false;
-    let req = supabase
-      .from("products")
-      .select("id, title, slug, price, compare_at_price, image_url, rating, rating_count, stock")
-      .eq("active", true)
-      .or(`title.ilike.${term},description.ilike.${term},brand.ilike.${term}`)
-      .limit(60);
-    if (in_stock) req = req.gt("stock", 0);
-    if (activeSort === "price_asc") req = req.order("price", { ascending: true });
-    else if (activeSort === "price_desc") req = req.order("price", { ascending: false });
-    else if (activeSort === "rating")
-      req = req.order("rating", { ascending: false, nullsFirst: false });
-    else if (activeSort === "newest") req = req.order("created_at", { ascending: false });
-    req.then(({ data }) => {
-      if (cancelled) return;
-      setResults((data ?? []) as ProductCardData[]);
-      setLoading(false);
-      if (safe) {
-        setRecentSearches((prev) => {
-          const next = [safe, ...prev.filter((s) => s.toLowerCase() !== safe.toLowerCase())].slice(
-            0,
-            MAX_RECENT_SEARCHES,
-          );
-          try {
-            localStorage.setItem("maison-recent-searches", JSON.stringify(next));
-          } catch {
-            // ignore
-          }
-          return next;
-        });
-      }
-    });
+    const timeoutId = setTimeout(() => {
+      let req = supabase
+        .from("products")
+        .select("id, title, slug, price, compare_at_price, image_url, rating, rating_count, stock")
+        .eq("active", true)
+        .or(`title.ilike.${term},description.ilike.${term},brand.ilike.${term}`)
+        .limit(60);
+      if (in_stock) req = req.gt("stock", 0);
+      if (activeSort === "price_asc") req = req.order("price", { ascending: true });
+      else if (activeSort === "price_desc") req = req.order("price", { ascending: false });
+      else if (activeSort === "rating")
+        req = req.order("rating", { ascending: false, nullsFirst: false });
+      else if (activeSort === "newest") req = req.order("created_at", { ascending: false });
+      req.then(({ data }) => {
+        if (cancelled) return;
+        setResults((data ?? []) as ProductCardData[]);
+        setLoading(false);
+        if (safe) {
+          setRecentSearches((prev) => {
+            const next = [
+              safe,
+              ...prev.filter((s) => s.toLowerCase() !== safe.toLowerCase()),
+            ].slice(0, MAX_RECENT_SEARCHES);
+            try {
+              localStorage.setItem("maison-recent-searches", JSON.stringify(next));
+            } catch {
+              // ignore
+            }
+            return next;
+          });
+        }
+      });
+    }, 300);
     return () => {
       cancelled = true;
+      clearTimeout(timeoutId);
     };
   }, [q, activeSort, in_stock]);
 
@@ -141,7 +145,11 @@ function SearchPage() {
               "What are you looking for?"
             )}
           </motion.h1>
-          <p className="mt-4 font-mono text-[11px] uppercase tracking-[0.22em] text-muted-foreground">
+          <p
+            aria-live="polite"
+            aria-atomic="true"
+            className="mt-4 font-mono text-[11px] uppercase tracking-[0.22em] text-muted-foreground"
+          >
             {loading
               ? "Searching the collection…"
               : q
@@ -169,10 +177,14 @@ function SearchPage() {
       {q && (
         <section className="border-b border-border">
           <div className="mx-auto flex max-w-[1400px] flex-wrap items-center gap-3 px-5 py-4 sm:px-8">
-            <label className="font-mono text-[11px] uppercase tracking-[0.22em] text-muted-foreground">
+            <label
+              htmlFor="search-sort"
+              className="font-mono text-[11px] uppercase tracking-[0.22em] text-muted-foreground"
+            >
               Sort
             </label>
             <select
+              id="search-sort"
               value={activeSort}
               onChange={(e) => updateSearch({ sort: e.target.value as Sort })}
               className="rounded-md border border-border bg-background px-3 py-1.5 text-sm"

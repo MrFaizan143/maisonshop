@@ -91,6 +91,7 @@ export function ProductCard({ product }: { product: ProductCardData }) {
         </button>
         {/* Quick-add button */}
         <button
+          type="button"
           onClick={handleQuickAdd}
           className="absolute bottom-3 right-3 grid h-9 w-9 place-items-center rounded-full bg-white/90 text-black shadow-md opacity-0 translate-y-1 transition-all duration-300 group-hover:opacity-100 group-hover:translate-y-0 hover:bg-white"
           aria-label={`Add ${product.title} to cart`}

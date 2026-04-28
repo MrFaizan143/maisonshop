@@ -248,6 +248,9 @@ export function SiteHeader() {
       {mobileOpen && (
         <div
           id="site-mobile-menu"
+          role="dialog"
+          aria-modal="true"
+          aria-label="Navigation menu"
           className="border-t border-[oklch(0.18_0_0)] bg-[oklch(0.08_0_0)] lg:hidden animate-in fade-in slide-in-from-top-2 duration-200"
         >
           <nav className="mx-auto flex max-w-[1400px] flex-col px-5 py-4">

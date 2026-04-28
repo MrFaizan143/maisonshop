@@ -4,11 +4,11 @@ import { Trash2, Minus, Plus, ShoppingBag, ArrowUpRight } from "lucide-react";
 import { motion } from "framer-motion";
 import { Button } from "@/components/ui/button";
 import { useCartStore } from "@/stores/cart-store";
-import { formatINR } from "@/lib/format";
+import { calcOrderTotals, formatINR } from "@/lib/format";
 import { supabase } from "@/integrations/supabase/client";
 import { ProductCard, type ProductCardData } from "@/components/product-card";
 import { trackEvent } from "@/lib/analytics";
-import { FREE_SHIPPING_THRESHOLD } from "@/lib/constants";
+import { FREE_SHIPPING_THRESHOLD, PRODUCT_SELECT } from "@/lib/constants";
 
 export const Route = createFileRoute("/cart")({
   head: () => ({ meta: [{ title: "Cart — Maison" }] }),
@@ -19,11 +19,12 @@ function CartPage() {
   const items = useCartStore((s) => s.items);
   const updateQty = useCartStore((s) => s.updateQty);
   const removeItem = useCartStore((s) => s.removeItem);
-  const subtotal = items.reduce((sum, i) => sum + i.price * i.quantity, 0);
-  const shipping = subtotal === 0 ? 0 : subtotal >= FREE_SHIPPING_THRESHOLD ? 0 : 49;
-  const total = subtotal + shipping;
+  const { subtotal, shipping, total } = useMemo(
+    () => calcOrderTotals(items, FREE_SHIPPING_THRESHOLD),
+    [items],
+  );
   const [upsell, setUpsell] = useState<ProductCardData[]>([]);
-  const inCartIds = useMemo(() => items.map((i) => i.productId), [items]);
+  const inCartIdsKey = useMemo(() => items.map((i) => i.productId).join(","), [items]);
   const freeShippingRemaining = Math.max(0, FREE_SHIPPING_THRESHOLD - subtotal);
   const freeShippingProgress = Math.min(
     100,
@@ -34,9 +35,10 @@ function CartPage() {
     if (items.length === 0) return;
     let cancelled = false;
     const priceCap = freeShippingRemaining > 0 ? Math.min(freeShippingRemaining + 300, 2500) : 1500;
+    const cartIds = new Set(inCartIdsKey.split(",").filter(Boolean));
     supabase
       .from("products")
-      .select("id, title, slug, price, compare_at_price, image_url, rating, rating_count, stock")
+      .select(PRODUCT_SELECT)
       .eq("active", true)
       .gt("stock", 0)
       .lte("price", priceCap)
@@ -45,15 +47,13 @@ function CartPage() {
       .limit(10)
       .then(({ data }) => {
         if (cancelled) return;
-        const filtered = ((data ?? []) as ProductCardData[]).filter(
-          (p) => !inCartIds.includes(p.id),
-        );
+        const filtered = ((data ?? []) as ProductCardData[]).filter((p) => !cartIds.has(p.id));
         setUpsell(filtered.slice(0, 4));
       });
     return () => {
       cancelled = true;
     };
-  }, [items.length, inCartIds, freeShippingRemaining]);
+  }, [items.length, inCartIdsKey, freeShippingRemaining]);
 
   if (items.length === 0) {
     return (
@@ -122,7 +122,7 @@ function CartPage() {
                       <button
                         onClick={() => updateQty(item.productId, item.quantity - 1)}
                         className="grid h-11 w-11 place-items-center hover:bg-muted transition-colors"
-                        aria-label="Decrease quantity"
+                        aria-label={`Decrease quantity of ${item.title}`}
                       >
                         <Minus className="h-3.5 w-3.5" />
                       </button>
@@ -131,7 +131,7 @@ function CartPage() {
                         onClick={() => updateQty(item.productId, item.quantity + 1)}
                         disabled={item.quantity >= item.stock}
                         className="grid h-11 w-11 place-items-center hover:bg-muted transition-colors disabled:opacity-40"
-                        aria-label="Increase quantity"
+                        aria-label={`Increase quantity of ${item.title}`}
                       >
                         <Plus className="h-3.5 w-3.5" />
                       </button>

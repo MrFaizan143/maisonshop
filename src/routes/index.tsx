@@ -7,6 +7,7 @@ import { ProductCard, type ProductCardData } from "@/components/product-card";
 import { getRecentlyViewed } from "@/lib/recently-viewed";
 import { trackEvent } from "@/lib/analytics";
 import { isValidEmail } from "@/lib/validation";
+import { PRODUCT_SELECT } from "@/lib/constants";
 import { toast } from "sonner";
 import catFashion from "@/assets/cat-fashion.jpg";
 import catGrocery from "@/assets/cat-grocery.jpg";
@@ -37,7 +38,13 @@ function HomePage() {
   const [recentlyViewed, setRecentlyViewed] = useState<ProductCardData[]>([]);
   const [loadingLatest, setLoadingLatest] = useState(true);
   const [newsletterEmail, setNewsletterEmail] = useState("");
-  const [newsletterDone, setNewsletterDone] = useState(false);
+  const [newsletterDone, setNewsletterDone] = useState(() => {
+    try {
+      return localStorage.getItem("maison-newsletter-done") === "1";
+    } catch {
+      return false;
+    }
+  });
 
   useEffect(() => {
     let mounted = true;
@@ -49,13 +56,13 @@ function HomePage() {
         const [latestRes, bestSellersRes, trendingRes] = await Promise.all([
           supabase
             .from("products")
-            .select("id, title, slug, price, compare_at_price, image_url, rating, rating_count, stock")
+            .select(PRODUCT_SELECT)
             .eq("active", true)
             .order("created_at", { ascending: false })
             .limit(8),
           supabase
             .from("products")
-            .select("id, title, slug, price, compare_at_price, image_url, rating, rating_count, stock")
+            .select(PRODUCT_SELECT)
             .eq("active", true)
             .gt("stock", 0)
             .order("rating", { ascending: false, nullsFirst: false })
@@ -63,7 +70,7 @@ function HomePage() {
             .limit(4),
           supabase
             .from("products")
-            .select("id, title, slug, price, compare_at_price, image_url, rating, rating_count, stock")
+            .select(PRODUCT_SELECT)
             .eq("active", true)
             .gt("stock", 0)
             .order("updated_at", { ascending: false })
@@ -107,6 +114,7 @@ function HomePage() {
       const prev = JSON.parse(localStorage.getItem(key) ?? "[]") as string[];
       const next = [email, ...prev.filter((v) => v !== email)].slice(0, MAX_NEWSLETTER_SIGNUPS);
       localStorage.setItem(key, JSON.stringify(next));
+      localStorage.setItem("maison-newsletter-done", "1");
       setNewsletterDone(true);
       setNewsletterEmail("");
       trackEvent("newsletter_subscribe", { emailDomain: email.split("@")[1] ?? "unknown" });
