@@ -13,7 +13,7 @@ import {
 import { Button } from "@/components/ui/button";
 import { supabase } from "@/integrations/supabase/client";
 import { useCartStore } from "@/stores/cart-store";
-import { formatINR, discountPct } from "@/lib/format";
+import { formatINR, discountPct, getEstimatedDelivery } from "@/lib/format";
 import { toast } from "sonner";
 import { cn } from "@/lib/utils";
 import { RelatedProducts } from "@/components/related-products";
@@ -73,7 +73,7 @@ export const Route = createFileRoute("/product/$slug")({
 function ProductPage() {
   const { product } = Route.useLoaderData();
   const addItem = useCartStore((s) => s.addItem);
-  const cartCount = useCartStore((s) => s.totalCount());
+  const cartCount = useCartStore((s) => s.items.reduce((sum, i) => sum + i.quantity, 0));
   const navigate = Route.useNavigate();
   const [qty, setQty] = useState(1);
   const allImages: string[] = product.image_url
@@ -113,11 +113,7 @@ function ProductPage() {
 
   const inStock = product.stock > 0;
   const lowStock = inStock && product.stock <= 5;
-  const estimatedDelivery = useMemo(() => {
-    const date = new Date();
-    date.setDate(date.getDate() + DELIVERY_ESTIMATE_DAYS);
-    return date.toLocaleDateString("en-IN", { weekday: "short", day: "numeric", month: "short" });
-  }, []);
+  const estimatedDelivery = useMemo(() => getEstimatedDelivery(DELIVERY_ESTIMATE_DAYS), []);
 
   useEffect(() => {
     pushRecentlyViewed({
@@ -366,11 +362,7 @@ function ProductPage() {
                 {formatINR(Number(product.price) * qty)} · Qty {qty}
               </p>
             </div>
-            <Button
-              onClick={handleAdd}
-              size="sm"
-              className="btn-premium-secondary"
-            >
+            <Button onClick={handleAdd} size="sm" className="btn-premium-secondary">
               Add
             </Button>
             <Button

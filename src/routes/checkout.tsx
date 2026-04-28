@@ -8,7 +8,7 @@ import { Checkbox } from "@/components/ui/checkbox";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/contexts/auth-context";
 import { useCartStore } from "@/stores/cart-store";
-import { formatINR } from "@/lib/format";
+import { calcOrderTotals, formatINR, getEstimatedDelivery } from "@/lib/format";
 import { toast } from "sonner";
 import { cn } from "@/lib/utils";
 import { trackEvent } from "@/lib/analytics";
@@ -43,14 +43,11 @@ function CheckoutPage() {
   const { user, loading: authLoading } = useAuth();
   const items = useCartStore((s) => s.items);
   const clearCart = useCartStore((s) => s.clearCart);
-  const subtotal = items.reduce((sum, i) => sum + i.price * i.quantity, 0);
-  const shipping = subtotal === 0 ? 0 : subtotal >= FREE_SHIPPING_THRESHOLD ? 0 : 49;
-  const total = subtotal + shipping;
-  const estimatedDelivery = useMemo(() => {
-    const date = new Date();
-    date.setDate(date.getDate() + DELIVERY_ESTIMATE_DAYS);
-    return date.toLocaleDateString("en-IN", { weekday: "short", day: "numeric", month: "short" });
-  }, []);
+  const { subtotal, shipping, total } = useMemo(
+    () => calcOrderTotals(items, FREE_SHIPPING_THRESHOLD),
+    [items],
+  );
+  const estimatedDelivery = useMemo(() => getEstimatedDelivery(DELIVERY_ESTIMATE_DAYS), []);
 
   const [saved, setSaved] = useState<SavedAddress[]>([]);
   const [selectedId, setSelectedId] = useState<string | "new">("new");
@@ -145,7 +142,8 @@ function CheckoutPage() {
   const validateField = (field: CheckoutField, value: string): string => {
     const v = value.trim();
     if (field === "full_name" && v.length < 2) return "Please enter your full name";
-    if (field === "phone" && !PHONE_RE.test(v)) return "Enter a valid 10-digit Indian mobile number";
+    if (field === "phone" && !PHONE_RE.test(v))
+      return "Enter a valid 10-digit Indian mobile number";
     if (field === "line1" && v.length < 5) return "Address line 1 looks too short";
     if (field === "city" && v.length < 2) return "Please enter your city";
     if (field === "state" && v.length < 2) return "Please enter your state";
@@ -398,7 +396,9 @@ function CheckoutPage() {
                 }
                 aria-invalid={!!errors.full_name}
               />
-              {errors.full_name && <p className="mt-1 text-xs text-destructive">{errors.full_name}</p>}
+              {errors.full_name && (
+                <p className="mt-1 text-xs text-destructive">{errors.full_name}</p>
+              )}
             </div>
             <div>
               <Label>Phone</Label>
@@ -485,9 +485,7 @@ function CheckoutPage() {
                 inputMode="numeric"
                 maxLength={6}
                 value={form.pincode}
-                onChange={(e) =>
-                  setField("pincode", e.target.value.replace(/\D/g, "").slice(0, 6))
-                }
+                onChange={(e) => setField("pincode", e.target.value.replace(/\D/g, "").slice(0, 6))}
                 onBlur={(e) =>
                   setErrors((prev) => ({
                     ...prev,
@@ -512,7 +510,8 @@ function CheckoutPage() {
               )}
               {pincodeStatus === "serviceable" && !errors.pincode && (
                 <p className="mt-1 text-xs text-muted-foreground">
-                  Estimated delivery by <span className="font-semibold text-foreground">{estimatedDelivery}</span>
+                  Estimated delivery by{" "}
+                  <span className="font-semibold text-foreground">{estimatedDelivery}</span>
                 </p>
               )}
             </div>
@@ -545,7 +544,8 @@ function CheckoutPage() {
               <li>We confirm your order within minutes.</li>
               <li>Dispatch usually happens within 24 hours.</li>
               <li>
-                Delivery expected by <span className="font-semibold text-foreground">{estimatedDelivery}</span>.
+                Delivery expected by{" "}
+                <span className="font-semibold text-foreground">{estimatedDelivery}</span>.
               </li>
               <li>Pay on delivery and enjoy 7-day easy returns.</li>
             </ul>

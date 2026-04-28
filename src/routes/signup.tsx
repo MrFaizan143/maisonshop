@@ -13,19 +13,44 @@ export const Route = createFileRoute("/signup")({
   component: SignupPage,
 });
 
+function passwordStrength(pwd: string): { label: string; colorClass: string } {
+  if (pwd.length === 0) return { label: "", colorClass: "" };
+  if (pwd.length < 8) return { label: "Too short", colorClass: "text-destructive" };
+  let score = 0;
+  if (/[A-Z]/.test(pwd)) score++;
+  if (/[0-9]/.test(pwd)) score++;
+  if (/[^A-Za-z0-9]/.test(pwd)) score++;
+  if (score === 0) return { label: "Weak", colorClass: "text-deal" };
+  if (score === 1) return { label: "Fair", colorClass: "text-yellow-600" };
+  if (score === 2) return { label: "Good", colorClass: "text-success" };
+  return { label: "Strong", colorClass: "text-success" };
+}
+
 function SignupPage() {
   const navigate = useNavigate();
   const { user } = useAuth();
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
+  const [confirm, setConfirm] = useState("");
   const [loading, setLoading] = useState(false);
 
   useEffect(() => {
     if (user) navigate({ to: "/" });
   }, [user, navigate]);
 
+  const strength = passwordStrength(password);
+  const confirmError = confirm && confirm !== password ? "Passwords do not match" : "";
+
   const handleSubmit = async (e: FormEvent) => {
     e.preventDefault();
+    if (password.length < 8) {
+      toast.error("Password must be at least 8 characters");
+      return;
+    }
+    if (password !== confirm) {
+      toast.error("Passwords do not match");
+      return;
+    }
     setLoading(true);
     const redirectUrl = `${window.location.origin}/`;
     const { error } = await supabase.auth.signUp({
@@ -75,18 +100,43 @@ function SignupPage() {
               htmlFor="password"
               className="font-mono text-[10px] uppercase tracking-[0.2em] text-muted-foreground"
             >
-              Password (min 6 chars)
+              Password (min 8 chars)
             </Label>
             <Input
               id="password"
               type="password"
               required
-              minLength={6}
+              minLength={8}
               value={password}
               onChange={(e) => setPassword(e.target.value)}
               autoComplete="new-password"
               className="mt-1.5 rounded-none border-x-0 border-t-0 border-b border-border bg-transparent px-0 focus-visible:ring-0 focus-visible:border-foreground"
             />
+            {password && (
+              <p className={`mt-1 font-mono text-[11px] ${strength.colorClass}`}>
+                {strength.label}
+              </p>
+            )}
+          </div>
+          <div>
+            <Label
+              htmlFor="confirm"
+              className="font-mono text-[10px] uppercase tracking-[0.2em] text-muted-foreground"
+            >
+              Confirm password
+            </Label>
+            <Input
+              id="confirm"
+              type="password"
+              required
+              minLength={8}
+              value={confirm}
+              onChange={(e) => setConfirm(e.target.value)}
+              autoComplete="new-password"
+              aria-invalid={!!confirmError}
+              className="mt-1.5 rounded-none border-x-0 border-t-0 border-b border-border bg-transparent px-0 focus-visible:ring-0 focus-visible:border-foreground"
+            />
+            {confirmError && <p className="mt-1 text-[11px] text-destructive">{confirmError}</p>}
           </div>
           <Button
             type="submit"

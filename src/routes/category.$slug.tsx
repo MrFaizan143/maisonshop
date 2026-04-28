@@ -4,6 +4,7 @@ import { motion, AnimatePresence } from "framer-motion";
 import { supabase } from "@/integrations/supabase/client";
 import { ProductCard, type ProductCardData } from "@/components/product-card";
 import { cn } from "@/lib/utils";
+import { PRODUCT_SELECT } from "@/lib/constants";
 
 type ThemeKey = "fashion" | "grocery" | "electronics" | "home" | "beauty";
 
@@ -92,7 +93,7 @@ function CategoryPage() {
     setLoading(true);
     let q = supabase
       .from("products")
-      .select("id, title, slug, price, compare_at_price, image_url, rating, rating_count, stock")
+      .select(PRODUCT_SELECT)
       .eq("active", true)
       .eq("category_id", category.id);
     if (inStockOnly) q = q.gt("stock", 0);
