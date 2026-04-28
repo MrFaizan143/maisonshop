@@ -40,36 +40,59 @@ function HomePage() {
   const [newsletterDone, setNewsletterDone] = useState(false);
 
   useEffect(() => {
+    let mounted = true;
     const viewed = getRecentlyViewed().map(({ viewedAt, ...rest }) => rest);
     setRecentlyViewed(viewed as ProductCardData[]);
 
-    supabase
-      .from("products")
-      .select("id, title, slug, price, compare_at_price, image_url, rating, rating_count, stock")
-      .eq("active", true)
-      .order("created_at", { ascending: false })
-      .limit(8)
-      .then(({ data }) => setLatest((data ?? []) as ProductCardData[]))
-      .finally(() => setLoadingLatest(false));
+    const loadHomepageCollections = async () => {
+      try {
+        const [latestRes, bestSellersRes, trendingRes] = await Promise.all([
+          supabase
+            .from("products")
+            .select("id, title, slug, price, compare_at_price, image_url, rating, rating_count, stock")
+            .eq("active", true)
+            .order("created_at", { ascending: false })
+            .limit(8),
+          supabase
+            .from("products")
+            .select("id, title, slug, price, compare_at_price, image_url, rating, rating_count, stock")
+            .eq("active", true)
+            .gt("stock", 0)
+            .order("rating", { ascending: false, nullsFirst: false })
+            .order("rating_count", { ascending: false })
+            .limit(4),
+          supabase
+            .from("products")
+            .select("id, title, slug, price, compare_at_price, image_url, rating, rating_count, stock")
+            .eq("active", true)
+            .gt("stock", 0)
+            .order("updated_at", { ascending: false })
+            .limit(4),
+        ]);
 
-    supabase
-      .from("products")
-      .select("id, title, slug, price, compare_at_price, image_url, rating, rating_count, stock")
-      .eq("active", true)
-      .gt("stock", 0)
-      .order("rating", { ascending: false, nullsFirst: false })
-      .order("rating_count", { ascending: false })
-      .limit(4)
-      .then(({ data }) => setBestSellers((data ?? []) as ProductCardData[]));
+        if (!mounted) {
+          return;
+        }
 
-    supabase
-      .from("products")
-      .select("id, title, slug, price, compare_at_price, image_url, rating, rating_count, stock")
-      .eq("active", true)
-      .gt("stock", 0)
-      .order("updated_at", { ascending: false })
-      .limit(4)
-      .then(({ data }) => setTrending((data ?? []) as ProductCardData[]));
+        if (latestRes.error || bestSellersRes.error || trendingRes.error) {
+          toast.error("Could not load all homepage products. Showing available items.");
+        }
+
+        setLatest((latestRes.data ?? []) as ProductCardData[]);
+        setBestSellers((bestSellersRes.data ?? []) as ProductCardData[]);
+        setTrending((trendingRes.data ?? []) as ProductCardData[]);
+      } finally {
+        if (mounted) {
+          setLoadingLatest(false);
+        }
+      }
+    };
+
+    void loadHomepageCollections();
+
+    return () => {
+      mounted = false;
+    };
   }, []);
 
   const handleNewsletter = (e: React.FormEvent) => {
@@ -94,6 +117,7 @@ function HomePage() {
 
   return (
     <div className="bg-background">
+      <h1 className="sr-only">Maison modern department store</h1>
       {/* ===== EDITORIAL SPLIT HERO ===== */}
       <section className="grid lg:grid-cols-2 min-h-[88vh] border-b border-border">
         {/* LEFT — FASHION (editorial monochrome) */}
@@ -112,6 +136,7 @@ function HomePage() {
           cta="Shop fashion now"
           image={catFashion}
           align="left"
+          imagePriority
         />
 
         {/* RIGHT — FOOD (organic earthy) */}
@@ -130,6 +155,7 @@ function HomePage() {
           cta="Shop groceries now"
           image={catGrocery}
           align="right"
+          imagePriority
         />
       </section>
 
@@ -179,6 +205,13 @@ function HomePage() {
             Browse all <ArrowUpRight className="h-3.5 w-3.5" />
           </Link>
         </div>
+        <Link
+          to="/search"
+          search={{ q: "" }}
+          className="mb-6 inline-flex sm:hidden items-center gap-2 rounded-full border border-border px-4 py-2 font-mono text-[11px] uppercase tracking-[0.2em] hover:bg-muted"
+        >
+          Browse all <ArrowUpRight className="h-3.5 w-3.5" />
+        </Link>
 
         <div className="grid grid-cols-1 md:grid-cols-3 gap-4 md:gap-6">
           <BentoTile
@@ -277,10 +310,13 @@ function HomePage() {
                 value={newsletterEmail}
                 onChange={(e) => setNewsletterEmail(e.target.value)}
                 aria-label="Email address"
+                required
+                autoComplete="email"
                 className="flex-1 border-b border-border bg-transparent pb-2 text-sm placeholder:text-muted-foreground/50 outline-none focus:border-foreground transition-colors"
               />
               <button
                 type="submit"
+                disabled={newsletterDone}
                 className="shrink-0 font-mono text-[11px] uppercase tracking-[0.22em] bg-foreground text-background px-5 py-2.5 hover:bg-foreground/90 transition-colors"
               >
                 {newsletterDone ? "Subscribed" : "Subscribe"}
@@ -323,6 +359,7 @@ function SplitPanel({
   cta,
   image,
   align,
+  imagePriority = false,
 }: {
   slug: "fashion" | "grocery";
   theme: "fashion" | "grocery";
@@ -332,6 +369,7 @@ function SplitPanel({
   cta: string;
   image: string;
   align: "left" | "right";
+  imagePriority?: boolean;
 }) {
   return (
     <Link
@@ -343,7 +381,11 @@ function SplitPanel({
       {/* Background image */}
       <motion.img
         src={image}
-        alt=""
+        alt={`${slug} collection`}
+        loading={imagePriority ? "eager" : "lazy"}
+        fetchPriority={imagePriority ? "high" : "auto"}
+        decoding="async"
+        sizes="(min-width: 1024px) 50vw, 100vw"
         className="absolute inset-0 h-full w-full object-cover opacity-70 transition-opacity duration-700 group-hover:opacity-90"
         initial={{ scale: 1.05 }}
         animate={{ scale: 1 }}
@@ -369,7 +411,7 @@ function SplitPanel({
         </div>
 
         <div className={`max-w-xl ${align === "right" ? "md:ml-auto" : ""}`}>
-          <motion.h1
+          <motion.h2
             initial={{ y: 30, opacity: 0 }}
             animate={{ y: 0, opacity: 1 }}
             transition={{ duration: 0.9, ease: [0.22, 1, 0.36, 1] }}
@@ -380,7 +422,7 @@ function SplitPanel({
             }`}
           >
             {title}
-          </motion.h1>
+          </motion.h2>
           <p className="mt-6 max-w-md text-white/85 text-base sm:text-lg leading-relaxed">
             {subtitle}
           </p>
@@ -424,6 +466,9 @@ function BentoTile({
       <img
         src={image}
         alt={title}
+        loading="lazy"
+        decoding="async"
+        sizes="(min-width: 768px) 33vw, 100vw"
         className="absolute inset-0 h-full w-full object-cover transition-transform duration-700 group-hover:scale-105"
       />
       <div className="absolute inset-0 bg-gradient-to-t from-black/70 via-black/20 to-transparent" />

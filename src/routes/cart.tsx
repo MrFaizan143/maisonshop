@@ -33,14 +33,16 @@ function CartPage() {
   useEffect(() => {
     if (items.length === 0) return;
     let cancelled = false;
+    const priceCap = freeShippingRemaining > 0 ? Math.min(freeShippingRemaining + 300, 2500) : 1500;
     supabase
       .from("products")
       .select("id, title, slug, price, compare_at_price, image_url, rating, rating_count, stock")
       .eq("active", true)
       .gt("stock", 0)
+      .lte("price", priceCap)
       .order("featured", { ascending: false })
       .order("rating", { ascending: false, nullsFirst: false })
-      .limit(6)
+      .limit(10)
       .then(({ data }) => {
         if (cancelled) return;
         const filtered = ((data ?? []) as ProductCardData[]).filter(
@@ -51,7 +53,7 @@ function CartPage() {
     return () => {
       cancelled = true;
     };
-  }, [items.length, inCartIds]);
+  }, [items.length, inCartIds, freeShippingRemaining]);
 
   if (items.length === 0) {
     return (
@@ -193,7 +195,7 @@ function CartPage() {
                     itemCount: items.length,
                   })
                 }
-                className="w-full bg-foreground text-background hover:bg-foreground/90 font-mono text-[11px] uppercase tracking-[0.22em] rounded-none"
+                className="btn-premium-primary w-full bg-foreground text-background hover:bg-foreground/90"
               >
                 Proceed to Checkout
               </Button>
@@ -208,7 +210,7 @@ function CartPage() {
             <div className="mb-5 flex items-baseline justify-between">
               <h2 className="font-display text-xl sm:text-2xl">Complete your order</h2>
               <span className="font-mono text-[10px] uppercase tracking-[0.18em] text-muted-foreground">
-                Recommended add-ons
+                Recommended to complete your order
               </span>
             </div>
             <div className="grid grid-cols-2 gap-4 sm:grid-cols-3 md:grid-cols-4 md:gap-6">

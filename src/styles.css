@@ -300,6 +300,25 @@
     background-size: 3px 3px;
   }
 
+  .btn-premium-primary {
+    border-radius: 0.5rem;
+    font-family: var(--font-mono);
+    font-size: 11px;
+    letter-spacing: 0.22em;
+    text-transform: uppercase;
+  }
+
+  .btn-premium-secondary {
+    border-radius: 0.5rem;
+    border: 1px solid var(--color-border);
+    background-color: transparent;
+    color: var(--color-foreground);
+    font-family: var(--font-mono);
+    font-size: 11px;
+    letter-spacing: 0.2em;
+    text-transform: uppercase;
+  }
+
   /* Announcement ticker */
   @keyframes ticker {
     from {
