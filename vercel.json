@@ -1,5 +1,17 @@
 {
   "buildCommand": "npm run build",
   "installCommand": "npm install",
-  "framework": null
+  "outputDirectory": "dist/client",
+  "framework": null,
+  "nodeVersion": "22.x",
+  "functions": {
+    "api/ssr.ts": {
+      "memory": 1024,
+      "maxDuration": 30
+    }
+  },
+  "rewrites": [
+    { "source": "/assets/:path*", "destination": "/assets/:path*" },
+    { "source": "/(.*)", "destination": "/api/ssr" }
+  ]
 }
