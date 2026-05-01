@@ -1,10 +1,11 @@
 import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
 import { useEffect, useMemo, useState } from "react";
-import { Loader2, Package, ShoppingBag, LayoutGrid, IndianRupee, Search } from "lucide-react";
+import { Loader2, Package, ShoppingBag, LayoutGrid, IndianRupee, Search, Bell } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/contexts/auth-context";
 import { formatINR } from "@/lib/format";
 import { Input } from "@/components/ui/input";
+import { toast } from "sonner";
 
 export const Route = createFileRoute("/admin")({
   head: () => ({ meta: [{ title: "Admin — Maison" }] }),
@@ -39,6 +40,7 @@ function AdminPage() {
   const [loading, setLoading] = useState(true);
   const [statusFilter, setStatusFilter] = useState<(typeof STATUS_FILTERS)[number]>("all");
   const [search, setSearch] = useState("");
+  const [newOrderCount, setNewOrderCount] = useState(0);
 
   useEffect(() => {
     if (authLoading) return;
@@ -64,6 +66,55 @@ function AdminPage() {
       setLoading(false);
     });
   }, [user, isAdmin, authLoading, navigate]);
+
+  // Realtime: live updates for new orders + status changes
+  useEffect(() => {
+    if (!isAdmin) return;
+    const channel = supabase
+      .channel("admin-orders")
+      .on(
+        "postgres_changes",
+        { event: "INSERT", schema: "public", table: "orders" },
+        (payload) => {
+          const o = payload.new as AdminOrder;
+          setOrders((prev) => [o, ...prev].slice(0, 100));
+          setNewOrderCount((n) => n + 1);
+          toast.success(`New order ${o.order_number}`, {
+            description: `${o.ship_full_name} · ${formatINR(Number(o.total))}`,
+          });
+          // Soft chime via Web Audio (no asset required)
+          try {
+            const ctx = new (window.AudioContext ||
+              (window as unknown as { webkitAudioContext: typeof AudioContext })
+                .webkitAudioContext)();
+            const o1 = ctx.createOscillator();
+            const g = ctx.createGain();
+            o1.frequency.value = 880;
+            o1.connect(g);
+            g.connect(ctx.destination);
+            g.gain.setValueAtTime(0.0001, ctx.currentTime);
+            g.gain.exponentialRampToValueAtTime(0.15, ctx.currentTime + 0.02);
+            g.gain.exponentialRampToValueAtTime(0.0001, ctx.currentTime + 0.4);
+            o1.start();
+            o1.stop(ctx.currentTime + 0.4);
+          } catch {
+            /* no-op */
+          }
+        },
+      )
+      .on(
+        "postgres_changes",
+        { event: "UPDATE", schema: "public", table: "orders" },
+        (payload) => {
+          const u = payload.new as AdminOrder;
+          setOrders((prev) => prev.map((o) => (o.id === u.id ? { ...o, ...u } : o)));
+        },
+      )
+      .subscribe();
+    return () => {
+      supabase.removeChannel(channel);
+    };
+  }, [isAdmin]);
 
   const updateStatus = async (id: string, status: string) => {
     const prev = orders;
