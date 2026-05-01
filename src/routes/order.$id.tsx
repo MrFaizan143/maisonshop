@@ -29,7 +29,6 @@ interface OrderRow {
   ship_state: string;
   ship_pincode: string;
   ship_country: string;
-  payment_method: string;
   placed_at: string;
 }
 
