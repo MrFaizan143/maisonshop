@@ -166,7 +166,25 @@ function AdminPage() {
 
   return (
     <div className="mx-auto max-w-7xl px-4 py-6">
-      <h1 className="mb-4 text-2xl font-semibold">Admin Panel</h1>
+      <div className="mb-4 flex items-center justify-between gap-3">
+        <h1 className="text-2xl font-semibold">Admin Panel</h1>
+        <div className="flex items-center gap-2 text-xs">
+          <span className="relative flex h-2 w-2">
+            <span className="absolute inline-flex h-full w-full animate-ping rounded-full bg-success opacity-75" />
+            <span className="relative inline-flex h-2 w-2 rounded-full bg-success" />
+          </span>
+          <span className="text-muted-foreground">Live</span>
+          {newOrderCount > 0 && (
+            <button
+              type="button"
+              onClick={() => setNewOrderCount(0)}
+              className="ml-2 inline-flex items-center gap-1 rounded-full bg-accent px-2 py-1 text-[11px] font-semibold text-accent-foreground"
+            >
+              <Bell className="h-3 w-3" /> {newOrderCount} new
+            </button>
+          )}
+        </div>
+      </div>
 
       <div className="mb-6 grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
         <StatCard icon={ShoppingBag} label="Recent orders" value={orders.length.toString()} />
