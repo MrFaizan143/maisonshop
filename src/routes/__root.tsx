@@ -6,6 +6,8 @@ import { Toaster } from "@/components/ui/sonner";
 import { AuthProvider } from "@/contexts/auth-context";
 import { ThemeProvider } from "@/contexts/theme-context";
 import { DragToCartProvider } from "@/components/drag-to-cart-provider";
+import { WhatsAppButton } from "@/components/whatsapp-button";
+import { CartSync } from "@/components/cart-sync";
 import { serializeJsonLd } from "@/lib/safe-json-ld";
 
 import appCss from "../styles.css?url";
@@ -101,6 +103,7 @@ function RootComponent() {
     <AuthProvider>
       <ThemeProvider>
         <DragToCartProvider>
+          <CartSync />
           <div className="flex min-h-screen flex-col">
             <a
               href="#main-content"
@@ -114,6 +117,7 @@ function RootComponent() {
               <Outlet />
             </main>
             <SiteFooter />
+            <WhatsAppButton />
             <Toaster position="top-center" richColors />
             <script
               type="application/ld+json"

@@ -1,9 +1,12 @@
 import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
 import { useEffect, useState } from "react";
-import { CheckCircle2, Loader2, Package, Wallet } from "lucide-react";
+import { CheckCircle2, Loader2, Package, Wallet, Truck, Copy, Check } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/contexts/auth-context";
 import { formatINR } from "@/lib/format";
+import { buildShiprocketPayload } from "@/lib/shiprocket";
+import { Button } from "@/components/ui/button";
+import { toast } from "sonner";
 
 export const Route = createFileRoute("/order/$id")({
   head: () => ({ meta: [{ title: "Order confirmed — Maison" }] }),
@@ -25,11 +28,13 @@ interface OrderRow {
   ship_city: string;
   ship_state: string;
   ship_pincode: string;
+  ship_country: string;
   placed_at: string;
 }
 
 interface OrderItemRow {
   id: string;
+  product_id: string | null;
   product_title: string;
   product_image: string | null;
   unit_price: number;
@@ -40,10 +45,26 @@ interface OrderItemRow {
 function OrderConfirmationPage() {
   const { id } = Route.useParams();
   const navigate = useNavigate();
-  const { user, loading: authLoading } = useAuth();
+  const { user, isAdmin, loading: authLoading } = useAuth();
   const [order, setOrder] = useState<OrderRow | null>(null);
   const [items, setItems] = useState<OrderItemRow[]>([]);
   const [loading, setLoading] = useState(true);
+  const [shiprocketPayload, setShiprocketPayload] = useState<string | null>(null);
+  const [copied, setCopied] = useState(false);
+
+  const generateLabel = () => {
+    if (!order) return;
+    const payload = buildShiprocketPayload(order, items);
+    setShiprocketPayload(JSON.stringify(payload, null, 2));
+    toast.success("Shiprocket payload generated");
+  };
+
+  const copyPayload = async () => {
+    if (!shiprocketPayload) return;
+    await navigator.clipboard.writeText(shiprocketPayload);
+    setCopied(true);
+    setTimeout(() => setCopied(false), 1500);
+  };
 
   useEffect(() => {
     if (authLoading) return;
@@ -174,6 +195,34 @@ function OrderConfirmationPage() {
           Continue shopping
         </Link>
       </div>
+
+      {isAdmin && (
+        <div className="mt-6 rounded-xl border border-dashed border-accent/40 bg-accent/5 p-5">
+          <h2 className="flex items-center gap-2 text-sm font-semibold uppercase tracking-wide text-accent">
+            <Truck className="h-4 w-4" /> Admin · Shiprocket
+          </h2>
+          <p className="mt-1 text-xs text-muted-foreground">
+            Generate the shipment payload for this order. Paste into Shiprocket's API or use it
+            once the credentials are wired up.
+          </p>
+          <div className="mt-3 flex flex-wrap gap-2">
+            <Button onClick={generateLabel} className="gap-2">
+              <Truck className="h-4 w-4" /> Generate Label
+            </Button>
+            {shiprocketPayload && (
+              <Button variant="outline" onClick={copyPayload} className="gap-2">
+                {copied ? <Check className="h-4 w-4" /> : <Copy className="h-4 w-4" />}
+                {copied ? "Copied" : "Copy payload"}
+              </Button>
+            )}
+          </div>
+          {shiprocketPayload && (
+            <pre className="mt-3 max-h-80 overflow-auto rounded-md bg-foreground/90 p-3 text-[11px] leading-relaxed text-background">
+              {shiprocketPayload}
+            </pre>
+          )}
+        </div>
+      )}
     </div>
   );
 }
