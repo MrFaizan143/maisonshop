@@ -1,9 +1,12 @@
 import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
 import { useEffect, useState } from "react";
-import { CheckCircle2, Loader2, Package, Wallet } from "lucide-react";
+import { CheckCircle2, Loader2, Package, Wallet, Truck, Copy, Check } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/contexts/auth-context";
 import { formatINR } from "@/lib/format";
+import { buildShiprocketPayload } from "@/lib/shiprocket";
+import { Button } from "@/components/ui/button";
+import { toast } from "sonner";
 
 export const Route = createFileRoute("/order/$id")({
   head: () => ({ meta: [{ title: "Order confirmed — Maison" }] }),
@@ -25,6 +28,8 @@ interface OrderRow {
   ship_city: string;
   ship_state: string;
   ship_pincode: string;
+  ship_country: string;
+  payment_method: string;
   placed_at: string;
 }
 
