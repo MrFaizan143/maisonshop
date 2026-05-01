@@ -34,6 +34,7 @@ interface OrderRow {
 
 interface OrderItemRow {
   id: string;
+  product_id: string | null;
   product_title: string;
   product_image: string | null;
   unit_price: number;
