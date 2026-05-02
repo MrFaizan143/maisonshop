@@ -30,7 +30,18 @@ export function SiteHeader() {
   const [q, setQ] = useState("");
   const [mobileOpen, setMobileOpen] = useState(false);
   const [searchOpen, setSearchOpen] = useState(false);
+  const [bump, setBump] = useState(false);
+  const prevCount = useRef(totalCount);
   const path = useRouterState({ select: (s) => s.location.pathname });
+
+  useEffect(() => {
+    if (totalCount > prevCount.current) {
+      setBump(true);
+      const t = setTimeout(() => setBump(false), 350);
+      return () => clearTimeout(t);
+    }
+    prevCount.current = totalCount;
+  }, [totalCount]);
 
   useEffect(() => {
     setMobileOpen(false);
