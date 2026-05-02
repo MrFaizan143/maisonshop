@@ -176,9 +176,14 @@ export function SiteHeader() {
             className="relative grid h-10 w-10 place-items-center rounded-full hover:bg-white/10 transition"
             aria-label={`Cart${totalCount > 0 ? ` (${totalCount} items)` : ""}`}
           >
-            <ShoppingBag className="h-[18px] w-[18px]" />
+            <ShoppingBag className={cn("h-[18px] w-[18px] transition-transform", bump && "scale-110")} />
             {totalCount > 0 && (
-              <span className="absolute top-1 right-1 grid h-4 min-w-4 place-items-center rounded-full bg-white px-1 text-[10px] font-semibold text-black">
+              <span
+                className={cn(
+                  "absolute top-1 right-1 grid h-4 min-w-4 place-items-center rounded-full bg-white px-1 text-[10px] font-semibold text-black transition-transform",
+                  bump && "scale-125",
+                )}
+              >
                 {totalCount}
               </span>
             )}
