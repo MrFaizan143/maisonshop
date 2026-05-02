@@ -1,4 +1,5 @@
 import { Link } from "@tanstack/react-router";
+import { useState } from "react";
 import { Star, Plus, GripVertical } from "lucide-react";
 import { formatINR, discountPct } from "@/lib/format";
 import { useCartStore } from "@/stores/cart-store";
