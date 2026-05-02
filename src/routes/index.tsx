@@ -53,41 +53,35 @@ function HomePage() {
 
     const loadHomepageCollections = async () => {
       try {
-        const [latestRes, bestSellersRes, trendingRes] = await Promise.all([
-          supabase
-            .from("products")
-            .select(PRODUCT_SELECT)
-            .eq("active", true)
-            .order("created_at", { ascending: false })
-            .limit(8),
-          supabase
-            .from("products")
-            .select(PRODUCT_SELECT)
-            .eq("active", true)
-            .gt("stock", 0)
-            .order("rating", { ascending: false, nullsFirst: false })
-            .order("rating_count", { ascending: false })
-            .limit(4),
-          supabase
-            .from("products")
-            .select(PRODUCT_SELECT)
-            .eq("active", true)
-            .gt("stock", 0)
-            .order("updated_at", { ascending: false })
-            .limit(4),
-        ]);
+        // Single query → partition client-side. 24 rows is plenty for "best/trending/latest".
+        const { data, error } = await supabase
+          .from("products")
+          .select(PRODUCT_SELECT)
+          .eq("active", true)
+          .order("created_at", { ascending: false })
+          .limit(24);
 
-        if (!mounted) {
+        if (!mounted) return;
+
+        if (error) {
+          toast.error("Could not load products.");
           return;
         }
 
-        if (latestRes.error || bestSellersRes.error || trendingRes.error) {
-          toast.error("Could not load all homepage products. Showing available items.");
-        }
-
-        setLatest((latestRes.data ?? []) as ProductCardData[]);
-        setBestSellers((bestSellersRes.data ?? []) as ProductCardData[]);
-        setTrending((trendingRes.data ?? []) as ProductCardData[]);
+        const all = (data ?? []) as ProductCardData[];
+        setLatest(all.slice(0, 8));
+        const inStock = all.filter((p) => p.stock > 0);
+        setBestSellers(
+          [...inStock]
+            .sort((a, b) => {
+              const ra = a.rating ?? 0;
+              const rb = b.rating ?? 0;
+              if (rb !== ra) return rb - ra;
+              return b.rating_count - a.rating_count;
+            })
+            .slice(0, 4),
+        );
+        setTrending(inStock.slice(0, 4));
       } finally {
         if (mounted) {
           setLoadingLatest(false);
@@ -163,7 +157,6 @@ function HomePage() {
           cta="Shop groceries now"
           image={catGrocery}
           align="right"
-          imagePriority
         />
       </section>
 
