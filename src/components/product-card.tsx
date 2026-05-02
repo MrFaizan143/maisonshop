@@ -1,4 +1,5 @@
 import { Link } from "@tanstack/react-router";
+import { useState } from "react";
 import { Star, Plus, GripVertical } from "lucide-react";
 import { formatINR, discountPct } from "@/lib/format";
 import { useCartStore } from "@/stores/cart-store";
@@ -22,6 +23,8 @@ export function ProductCard({ product }: { product: ProductCardData }) {
   const discount = discountPct(product.price, product.compare_at_price);
   const addItem = useCartStore((s) => s.addItem);
   const { bindHandle } = useDragToCart();
+  const [imgLoaded, setImgLoaded] = useState(false);
+  const outOfStock = product.stock <= 0;
   const dragHandle = bindHandle({
     productId: product.id,
     title: product.title,
@@ -64,40 +67,53 @@ export function ProductCard({ product }: { product: ProductCardData }) {
             src={product.image_url}
             alt={product.title}
             loading="lazy"
-            className="h-full w-full object-cover transition-transform duration-700 group-hover:scale-[1.04]"
+            decoding="async"
+            onLoad={() => setImgLoaded(true)}
+            className={`h-full w-full object-cover transition-[transform,opacity,filter] duration-700 ease-out group-hover:scale-[1.04] ${
+              imgLoaded ? "opacity-100 blur-0" : "opacity-0 blur-md scale-[1.02]"
+            } ${outOfStock ? "grayscale opacity-70" : ""}`}
           />
         ) : (
           <div className="grid h-full place-items-center text-muted-foreground text-xs">
             No image
           </div>
         )}
-        {discount && (
+        {discount && !outOfStock && (
           <span className="absolute top-3 left-3 bg-foreground text-background px-2 py-0.5 font-mono text-[10px] uppercase tracking-[0.15em]">
             −{discount}%
           </span>
         )}
-        {/* Long-press drag handle (hold ~600ms, then drag to Cart / Buy Now) */}
-        <button
-          type="button"
-          {...dragHandle}
-          onClick={(e) => {
-            e.preventDefault();
-            e.stopPropagation();
-          }}
-          className="absolute top-3 right-3 grid h-9 w-9 cursor-grab touch-none place-items-center rounded-full bg-white/90 text-black shadow-md opacity-100 transition-all duration-300 hover:bg-white active:cursor-grabbing md:opacity-0 md:translate-y-1 md:group-hover:opacity-100 md:group-hover:translate-y-0"
-          aria-label={`Hold to drag ${product.title} to cart`}
-        >
-          <GripVertical className="h-4 w-4" />
-        </button>
-        {/* Quick-add button */}
-        <button
-          type="button"
-          onClick={handleQuickAdd}
-          className="absolute bottom-3 right-3 grid h-9 w-9 place-items-center rounded-full bg-white/90 text-black shadow-md opacity-0 translate-y-1 transition-all duration-300 group-hover:opacity-100 group-hover:translate-y-0 hover:bg-white"
-          aria-label={`Add ${product.title} to cart`}
-        >
-          <Plus className="h-4 w-4" />
-        </button>
+        {outOfStock && (
+          <span className="absolute top-3 left-3 bg-background/90 text-foreground border border-border px-2 py-0.5 font-mono text-[10px] uppercase tracking-[0.15em]">
+            Sold out
+          </span>
+        )}
+        {/* Long-press drag handle — discreet on mobile, hover-reveal on desktop */}
+        {!outOfStock && (
+          <button
+            type="button"
+            {...dragHandle}
+            onClick={(e) => {
+              e.preventDefault();
+              e.stopPropagation();
+            }}
+            className="absolute top-3 right-3 hidden h-9 w-9 cursor-grab touch-none place-items-center rounded-full bg-white/90 text-black shadow-md transition-all duration-300 hover:bg-white active:cursor-grabbing sm:grid md:opacity-0 md:translate-y-1 md:group-hover:opacity-100 md:group-hover:translate-y-0"
+            aria-label={`Hold to drag ${product.title} to cart`}
+          >
+            <GripVertical className="h-4 w-4" />
+          </button>
+        )}
+        {/* Quick-add button — visible on mobile, hover-reveal on desktop */}
+        {!outOfStock && (
+          <button
+            type="button"
+            onClick={handleQuickAdd}
+            className="absolute bottom-3 right-3 grid h-9 w-9 place-items-center rounded-full bg-white/95 text-black shadow-md transition-all duration-300 hover:bg-white active:scale-95 md:opacity-0 md:translate-y-1 md:group-hover:opacity-100 md:group-hover:translate-y-0"
+            aria-label={`Add ${product.title} to cart`}
+          >
+            <Plus className="h-4 w-4" />
+          </button>
+        )}
       </div>
       <div className="mt-4 flex items-baseline justify-between gap-3 border-t border-border pt-3">
         <div className="min-w-0">

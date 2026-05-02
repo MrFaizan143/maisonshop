@@ -407,13 +407,13 @@ function SplitPanel({
       />
 
       <div
-        className={`relative flex h-full min-h-[88vh] flex-col justify-between p-8 sm:p-14 ${align === "right" ? "md:items-end md:text-right" : ""}`}
+        className={`relative flex h-full min-h-[88vh] flex-col justify-between p-6 sm:p-14 ${align === "right" ? "md:items-end md:text-right" : ""}`}
       >
         <div className="flex items-center justify-between w-full">
-          <span className="font-mono text-[11px] uppercase tracking-[0.25em] text-white/80">
+          <span className="font-mono text-[10px] sm:text-[11px] uppercase tracking-[0.22em] text-white/80">
             {eyebrow}
           </span>
-          <span className="font-mono text-[11px] uppercase tracking-[0.25em] text-white/60">
+          <span className="font-mono text-[10px] sm:text-[11px] uppercase tracking-[0.22em] text-white/60">
             {theme === "fashion" ? "Editorial" : "Organic"}
           </span>
         </div>
@@ -425,13 +425,13 @@ function SplitPanel({
             transition={{ duration: 0.9, ease: [0.22, 1, 0.36, 1] }}
             className={`text-white ${
               theme === "fashion"
-                ? "editorial-headline text-[clamp(3.5rem,9vw,8rem)]"
-                : "organic-headline text-[clamp(3rem,8vw,7rem)]"
+                ? "editorial-headline text-[clamp(4.25rem,11vw,8rem)]"
+                : "organic-headline text-[clamp(3.75rem,10vw,7rem)]"
             }`}
           >
             {title}
           </motion.h2>
-          <p className="mt-6 max-w-md text-white/85 text-base sm:text-lg leading-relaxed">
+          <p className="mt-5 sm:mt-6 max-w-md text-white/85 text-[15px] sm:text-lg leading-relaxed">
             {subtitle}
           </p>
           <div
