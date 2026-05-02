@@ -157,7 +157,6 @@ function HomePage() {
           cta="Shop groceries now"
           image={catGrocery}
           align="right"
-          imagePriority
         />
       </section>
 
