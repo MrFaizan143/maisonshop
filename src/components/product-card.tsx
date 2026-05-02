@@ -23,6 +23,8 @@ export function ProductCard({ product }: { product: ProductCardData }) {
   const discount = discountPct(product.price, product.compare_at_price);
   const addItem = useCartStore((s) => s.addItem);
   const { bindHandle } = useDragToCart();
+  const [imgLoaded, setImgLoaded] = useState(false);
+  const outOfStock = product.stock <= 0;
   const dragHandle = bindHandle({
     productId: product.id,
     title: product.title,
