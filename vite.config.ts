@@ -1,6 +1,13 @@
 import { defineConfig } from "@lovable.dev/vite-tanstack-config";
 
 export default defineConfig({
+  environments: {
+    ssr: {
+      resolve: {
+        noExternal: true,
+      },
+    },
+  },
   build: {
     chunkSizeWarningLimit: 700,
     rollupOptions: {
