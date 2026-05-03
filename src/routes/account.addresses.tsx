@@ -82,7 +82,8 @@ function AddressesPage() {
     });
     setSaving(false);
     if (error) {
-      toast.error(error.message);
+      console.error("[addresses] save error:", error);
+      toast.error("Couldn't save address. Please try again.");
       return;
     }
     toast.success("Address saved");

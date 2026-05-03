@@ -57,7 +57,8 @@ function AdminProductsPage() {
   const toggleActive = async (id: string, active: boolean) => {
     const { error } = await supabase.from("products").update({ active: !active }).eq("id", id);
     if (error) {
-      toast.error(error.message);
+      console.error("[admin.products] toggle error:", error);
+      toast.error("Couldn't update product. Please try again.");
       return;
     }
     setRows((prev) => prev.map((r) => (r.id === id ? { ...r, active: !active } : r)));

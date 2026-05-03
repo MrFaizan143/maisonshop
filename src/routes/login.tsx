@@ -30,7 +30,8 @@ function LoginPage() {
     const { error } = await supabase.auth.signInWithPassword({ email, password });
     setLoading(false);
     if (error) {
-      toast.error("Sign in failed", { description: error.message });
+      console.error("[login] sign-in error:", error);
+      toast.error("Sign in failed. Please check your credentials.");
       return;
     }
     toast.success("Welcome back!");

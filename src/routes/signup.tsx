@@ -60,7 +60,8 @@ function SignupPage() {
     });
     setLoading(false);
     if (error) {
-      toast.error("Sign up failed", { description: error.message });
+      console.error("[signup] sign-up error:", error);
+      toast.error("Sign up failed. Please try again.");
       return;
     }
     toast.success("Account created — welcome!");
