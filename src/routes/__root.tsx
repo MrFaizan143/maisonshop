@@ -62,6 +62,11 @@ export const Route = createRootRoute({
         content:
           "Editorial fashion. Lush food. Sharp electronics. One destination — Maison. Cash on Delivery across India.",
       },
+      { name: "description", content: "Maisonshop is a fully-featured e-commerce website for selling products online." },
+      { property: "og:description", content: "Maisonshop is a fully-featured e-commerce website for selling products online." },
+      { name: "twitter:description", content: "Maisonshop is a fully-featured e-commerce website for selling products online." },
+      { property: "og:image", content: "https://storage.googleapis.com/gpt-engineer-file-uploads/5az5njxy98a8IUDrwm9S79i1ErE2/social-images/social-1777800599647-1000283060.webp" },
+      { name: "twitter:image", content: "https://storage.googleapis.com/gpt-engineer-file-uploads/5az5njxy98a8IUDrwm9S79i1ErE2/social-images/social-1777800599647-1000283060.webp" },
     ],
     links: [
       { rel: "stylesheet", href: appCss },
