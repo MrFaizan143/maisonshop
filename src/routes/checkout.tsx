@@ -238,49 +238,26 @@ function CheckoutPage() {
       return;
     }
     setPlacing(true);
-    const { data: order, error } = await supabase
-      .from("orders")
-      .insert({
-        user_id: user.id,
-        subtotal,
-        shipping_fee: shipping,
-        total,
-        payment_method: "cod",
-        ship_full_name: form.full_name.trim(),
-        ship_phone: form.phone.trim(),
-        ship_line1: form.line1.trim(),
-        ship_line2: form.line2.trim() || null,
-        ship_city: form.city.trim(),
-        ship_state: form.state.trim(),
-        ship_pincode: form.pincode.trim(),
-      })
-      .select("id, order_number")
-      .single();
+    const { data: rpcData, error } = await supabase.rpc("place_order" as never, {
+      _items: items.map((i) => ({ product_id: i.productId, quantity: i.quantity })),
+      _ship_full_name: form.full_name.trim(),
+      _ship_phone: form.phone.trim(),
+      _ship_line1: form.line1.trim(),
+      _ship_line2: form.line2.trim(),
+      _ship_city: form.city.trim(),
+      _ship_state: form.state.trim(),
+      _ship_pincode: form.pincode.trim(),
+    } as never);
+    const order = Array.isArray(rpcData) ? (rpcData[0] as { id: string; order_number: string } | undefined) : undefined;
     if (error || !order) {
-      toast.error("Couldn't place order", { description: error?.message });
-      setPlacing(false);
-      return;
-    }
-    const { error: itemsErr } = await supabase.from("order_items").insert(
-      items.map((i) => ({
-        order_id: order.id,
-        product_id: i.productId,
-        product_title: i.title,
-        product_image: i.image,
-        unit_price: i.price,
-        quantity: i.quantity,
-        line_total: i.price * i.quantity,
-      })),
-    );
-    if (itemsErr) {
-      const { error: rollbackError } = await supabase.from("orders").delete().eq("id", order.id);
-      if (rollbackError) {
-        console.error("Failed to rollback orphaned order", rollbackError);
-        toast.error(
-          "An error occurred while processing your order. Please contact support if you were charged.",
-        );
-      }
-      toast.error("Order items failed", { description: itemsErr.message });
+      console.error("[checkout] place_order error:", error);
+      const msg = error?.message ?? "";
+      let friendly = "Couldn't place your order. Please try again.";
+      if (msg.includes("INSUFFICIENT_STOCK")) friendly = "One or more items are out of stock.";
+      else if (msg.includes("PRODUCT_UNAVAILABLE")) friendly = "An item in your cart is no longer available.";
+      else if (msg.includes("INVALID_ADDRESS")) friendly = "Please check your shipping address.";
+      else if (msg.includes("EMPTY_CART")) friendly = "Your cart is empty.";
+      toast.error(friendly);
       setPlacing(false);
       return;
     }

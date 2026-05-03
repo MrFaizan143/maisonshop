@@ -95,7 +95,8 @@ export function AdminProductForm({ productId }: { productId?: string }) {
       upsert: false,
     });
     if (error) {
-      toast.error("Upload failed", { description: error.message });
+      console.error("[admin-product-form] upload error:", error);
+      toast.error("Upload failed. Please try again.");
       setUploading(false);
       return;
     }
@@ -127,7 +128,8 @@ export function AdminProductForm({ productId }: { productId?: string }) {
       : await supabase.from("products").insert(payload);
     setSaving(false);
     if (error) {
-      toast.error("Save failed", { description: error.message });
+      console.error("[admin-product-form] save error:", error);
+      toast.error("Save failed. Please try again.");
       return;
     }
     toast.success(productId ? "Product updated" : "Product created");
