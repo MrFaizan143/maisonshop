@@ -388,6 +388,22 @@ export type Database = {
         }
         Returns: boolean
       }
+      place_order: {
+        Args: {
+          _items: Json
+          _ship_city: string
+          _ship_full_name: string
+          _ship_line1: string
+          _ship_line2: string
+          _ship_phone: string
+          _ship_pincode: string
+          _ship_state: string
+        }
+        Returns: {
+          id: string
+          order_number: string
+        }[]
+      }
     }
     Enums: {
       app_role: "admin" | "customer"
